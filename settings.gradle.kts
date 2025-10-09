@@ -19,6 +19,6 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "Freedium.cfd"
+rootProject.name = "FreeView"
 include(":app")
  

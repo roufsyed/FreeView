@@ -1,8 +1,6 @@
-````markdown
 # FreeView - Unofficial Android Freedium Reader
 
-A lightweight Android app that renders [Freedium](https://freedium.cfd) pages in a clean, distraction-free WebView interface.  
-This app allows users to view Medium premium articles through Freedium without ads or browser clutter.
+A lightweight Android app that renders [Freedium](https://freedium.cfd) pages in a clean, distraction-free WebView interface. This app allows users to view Medium premium articles through Freedium without ads or browser clutter.
 
 > ⚠️ **Disclaimer:**  
 > This project is not affiliated with, endorsed by, or connected to Medium.com or Freedium.cfd.  
@@ -13,49 +11,52 @@ This app allows users to view Medium premium articles through Freedium without a
 
 ## ✨ Features
 
-- Minimal, fast, and lightweight WebView-based reader  
-- Opens Freedium URLs directly inside the app  
-- Supports link sharing and deep linking from browser  
-- Uses modern Android components (ViewBinding, Kotlin DSL)  
-- Compatible with Android 7.0 (API 24) and higher  
-- Clean Material Design UI  
+- Minimal, fast, and lightweight WebView-based reader
+- Opens Freedium URLs directly inside the app
+- Supports link sharing and deep linking from browser
+- Uses modern Android components (ViewBinding, Kotlin DSL)
+- Compatible with Android 7.0 (API 24) and higher
+- Clean Material Design UI
 
 ---
 
-## 🧩 Tech Stack
+## 📸 Screenshots
 
-| Component | Library / Version |
-|------------|------------------|
-| Language | Kotlin (JVM target 11) |
-| Architecture | MVVM (optional setup ready) |
-| UI Toolkit | Material Components, ViewBinding |
-| Min SDK | 24 |
-| Target SDK | 36 |
-| Build Tools | Gradle Kotlin DSL |
-| Test Framework | JUnit, Espresso |
-| Web Rendering | Android WebView |
+| Homepage | Article View |
+|----------|--------------|
+| ![Homepage](images/homepage.jpeg) | ![Article View](images/articleView.jpeg) |
 
 ---
+
+## 🛠️ Tech Stack
+
+| Component      | Library / Version                |
+|----------------|----------------------------------|
+| Language       | Kotlin (JVM target 11)           |
+| Architecture   | MVVM                             |
+| UI Toolkit     | Material Components, ViewBinding |
+| Min SDK        | 24                               |
+| Target SDK     | 36                               |
+| Build Tools    | Gradle Kotlin DSL                |
+| Test Framework | JUnit, Espresso                  |
+| Web Rendering  | Android WebView                  |
+
+---
+
 ## 📱 Usage
 
-1. Share any Medium article link to FreeView app.
-4. Enjoy a clean reading experience.
-
-Example:
-
-```
-Original: https://medium.com/some-article
-Freedium: https://freedium.cfd/some-article
-```
+1. Share any Medium article link to FreeView app
+3. Enjoy a clean reading experience
 
 ---
 
-## 📜 License
+## 📄 License
 
 This project is licensed under the [MIT License](./LICENSE).
-© 2025 Rouf Syed.
 
-```text
+© 2025 Rouf Syed
+
+```
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
 in the Software without restriction, including without limitation the rights
@@ -77,8 +78,8 @@ THE SOFTWARE.
 
 ---
 
-## ⚖️ Disclaimer
+## ⚠️ Important Notes
 
-* This app is a **client-side Freedium viewer**.
-* It does not scrape, modify, or host content.
-* Use responsibly and in compliance with the terms of Medium.com and Freedium.cfd.
+- This app is a **client-side Freedium viewer**
+- It does not scrape, modify, or host content
+- Use responsibly and in compliance with the terms of Medium.com and Freedium.cfd
