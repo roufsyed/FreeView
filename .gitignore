@@ -1,0 +1,84 @@
+# Gradle build output
+.gradle/
+build/
+**/build/
+!gradle/wrapper/gradle-wrapper.jar
+
+# Local configuration files
+local.properties
+*.iml
+.idea/
+
+# Android Studio captures & caches
+captures/
+.externalNativeBuild/
+.cxx/
+
+# Generated binaries / intermediates
+*.apk
+*.ap_
+*.aab
+*.dex
+*.class
+*.o
+*.so
+*.out
+
+# Keystore files (sensitive)
+*.jks
+*.keystore
+*.pem
+*.p12
+signing.properties
+keystore.properties
+secret.properties
+*.key
+*.crt
+
+# OS-specific
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+logcat.txt
+
+# Kotlin / Java build artifacts
+bin/
+gen/
+out/
+target/
+
+# Test results
+*.ec
+*.coverage
+*.hprof
+
+# Lint / analysis reports
+lint/intermediates/
+lint/generated/
+lint/outputs/
+lint/tmp/
+lint-results-*.xml
+lint-results-*.html
+
+# IDE metadata
+.idea/workspace.xml
+.idea/tasks.xml
+.idea/dictionaries
+.idea/libraries
+.idea/modules.xml
+.idea/navEditor.xml
+.idea/assetWizardSettings.xml
+
+# JetBrains project files
+*.ipr
+*.iws
+
+# VS Code (optional)
+.vscode/
+
+# NDK / CMake intermediates
+obj/
+*.cmake
