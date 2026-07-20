@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- Reading service picker. entryValues MUST match MediumService.id values. -->
+    <string-array name="service_entries">
+        <item>Read-Medium</item>
+        <item>Freedium</item>
+        <item>Archive.today</item>
+        <item>Archive.is</item>
+        <item>Proxy API</item>
+    </string-array>
+    <string-array name="service_values" translatable="false">
+        <item>readmedium</item>
+        <item>freedium</item>
+        <item>archive_today</item>
+        <item>archive_is</item>
+        <item>proxy</item>
+    </string-array>
+
+    <!-- Theme -->
+    <string-array name="theme_entries">
+        <item>Follow system</item>
+        <item>Light</item>
+        <item>Dark</item>
+    </string-array>
+    <string-array name="theme_values" translatable="false">
+        <item>system</item>
+        <item>light</item>
+        <item>dark</item>
+    </string-array>
+
+    <!-- Article text size (WebView textZoom percentage) -->
+    <string-array name="text_zoom_entries">
+        <item>Small (90%)</item>
+        <item>Default (100%)</item>
+        <item>Large (110%)</item>
+        <item>Larger (125%)</item>
+    </string-array>
+    <string-array name="text_zoom_values" translatable="false">
+        <item>90</item>
+        <item>100</item>
+        <item>110</item>
+        <item>125</item>
+    </string-array>
+
+    <!-- History size -->
+    <string-array name="history_size_entries">
+        <item>Don\'t store history</item>
+        <item>Last 20</item>
+        <item>Last 50</item>
+        <item>Last 100</item>
+    </string-array>
+    <string-array name="history_size_values" translatable="false">
+        <item>0</item>
+        <item>20</item>
+        <item>50</item>
+        <item>100</item>
+    </string-array>
+
+</resources>

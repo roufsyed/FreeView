@@ -1,8 +1,13 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
     <!-- Base application theme. -->
     <style name="Base.Theme.Freediumcfd" parent="Theme.Material3.DayNight.NoActionBar">
-        <!-- Customize your light theme here. -->
-        <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
+        <item name="colorPrimary">@color/brand_blue</item>
+        <item name="colorOnPrimary">@color/white</item>
+        <!-- Soft off-white surfaces for a gentler light mode (light theme only). -->
+        <item name="android:colorBackground">@color/off_white</item>
+        <item name="colorSurface">@color/off_white</item>
+        <!-- Required by PreferenceFragmentCompat in SettingsActivity. -->
+        <item name="preferenceTheme">@style/PreferenceThemeOverlay</item>
     </style>
 
     <style name="Theme.Freediumcfd" parent="Base.Theme.Freediumcfd" />

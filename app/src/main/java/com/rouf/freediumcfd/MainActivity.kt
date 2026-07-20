@@ -7,31 +7,46 @@ import android.graphics.Color
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.os.Bundle
+import android.transition.TransitionManager
 import android.util.Log
+import android.view.KeyEvent
+import android.view.Menu
+import android.view.MenuItem
+import android.view.MotionEvent
+import android.view.inputmethod.EditorInfo
+import android.view.inputmethod.InputMethodManager
 import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
 import android.webkit.WebSettings
 import android.webkit.WebView
 import android.webkit.WebViewClient
+import androidx.activity.viewModels
 import androidx.annotation.RequiresPermission
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.net.toUri
 import androidx.core.view.ViewCompat
+import androidx.core.view.isVisible
+import androidx.core.widget.doAfterTextChanged
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.updatePadding
+import com.google.android.material.color.MaterialColors
 import com.rouf.freediumcfd.databinding.ActivityMainBinding
-import androidx.core.net.toUri
-import androidx.core.view.WindowInsetsControllerCompat
 
 class MainActivity : AppCompatActivity() {
 
     companion object {
+        const val EXTRA_OPEN_URL = "com.rouf.freediumcfd.extra.OPEN_URL"
+
         private const val TAG = "MainActivity"
         private const val MEDIUM_DOMAIN = "medium.com"
-        private const val FREEDIUM_BASE_URL = "https://freedium.cfd"
         private const val URL_REGEX = "(https?://[\\w.-]+(?:/[\\w./?=&%\\-_~#@!$'()*+,;:]*)?)"
     }
 
     private lateinit var binding: ActivityMainBinding
+    private val prefs by lazy { AppPreferences(this) }
+    private val history by lazy { HistoryStore(this) }
+    private val viewModel: MainViewModel by viewModels()
 
     @RequiresPermission(Manifest.permission.ACCESS_NETWORK_STATE)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -41,32 +56,88 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        // Enable edge-to-edge drawing
+        setSupportActionBar(binding.toolbar)
+        supportActionBar?.setDisplayShowTitleEnabled(false)
+
+        // Draw edge-to-edge; pad the root for the system bars so the collapsing
+        // app bar and the WebView lay out within the safe area.
         WindowCompat.setDecorFitsSystemWindows(window, false)
-
-        // Hide status bar completely
-        val controller = ViewCompat.getWindowInsetsController(window.decorView)
-        controller?.let {
-            it.hide(WindowInsetsCompat.Type.statusBars()) // hides the status bar
-            it.systemBarsBehavior =
-                WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE // show on swipe
-        }
-
-        // Optional: Make status bar transparent if it ever appears
-        window.statusBarColor = Color.TRANSPARENT
-
-        // Apply proper insets so the WebView doesn't overlap with navigation bar (bottom)
-        ViewCompat.setOnApplyWindowInsetsListener(binding.webView) { view, windowInsets ->
-            val insets = windowInsets.getInsets(WindowInsetsCompat.Type.navigationBars())
-            view.setPadding(insets.left, 0, insets.right, insets.bottom)
+        ViewCompat.setOnApplyWindowInsetsListener(binding.mainRoot) { view, windowInsets ->
+            val bars = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars())
+            view.updatePadding(top = bars.top, left = bars.left, right = bars.right, bottom = bars.bottom)
             WindowInsetsCompat.CONSUMED
         }
 
-        // Configure WebView
         binding.webView.configureWebViewSettings()
+        setupUrlInput()
 
-        Log.d(TAG, "About to handle intent")
-        handleIntent(intent)
+        if (savedInstanceState == null) {
+            Log.d(TAG, "Fresh start; handling launch intent")
+            handleIntent(intent)
+        } else {
+            Log.d(TAG, "Recreated; restoring state from ViewModel")
+            restoreState()
+        }
+    }
+
+    /** Re-applies state kept in [viewModel] after a configuration change (e.g. rotation). */
+    @RequiresPermission(Manifest.permission.ACCESS_NETWORK_STATE)
+    private fun restoreState() {
+        setUrlBarVisible(viewModel.isUrlBarVisible, animate = false)
+        val url = viewModel.currentMediumUrl
+        if (url != null) {
+            setupWebView(prefs.selectedService.buildUrl(url))
+        } else {
+            showWelcomePage()
+        }
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        menuInflater.inflate(R.menu.main_menu, menu)
+        return true
+    }
+
+    override fun onPrepareOptionsMenu(menu: Menu): Boolean {
+        // The search action toggles the URL bar; its icon reflects the current state.
+        menu.findItem(R.id.action_toggle_search)?.apply {
+            val showingSearch = binding.urlInputLayout.isVisible
+            setIcon(if (showingSearch) R.drawable.ic_close_24 else R.drawable.ic_search_24)
+            setTitle(if (showingSearch) R.string.action_close_search else R.string.action_search)
+        }
+        return super.onPrepareOptionsMenu(menu)
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return when (item.itemId) {
+            R.id.action_toggle_search -> {
+                val show = !binding.urlInputLayout.isVisible
+                setUrlBarVisible(show, focus = show)
+                true
+            }
+            R.id.action_history -> {
+                startActivity(Intent(this, HistoryActivity::class.java))
+                true
+            }
+            R.id.action_settings -> {
+                startActivity(Intent(this, SettingsActivity::class.java))
+                true
+            }
+            else -> super.onOptionsItemSelected(item)
+        }
+    }
+
+    @RequiresPermission(Manifest.permission.ACCESS_NETWORK_STATE)
+    override fun onResume() {
+        super.onResume()
+        // Reflect settings that may have changed while in the Settings screen.
+        binding.webView.settings.textZoom = prefs.textZoom
+        val url = viewModel.currentMediumUrl ?: return
+        val serviceId = prefs.selectedService.id
+        if (serviceId != viewModel.lastServiceId) {
+            Log.d(TAG, "Service changed to $serviceId; reloading current article")
+            viewModel.lastServiceId = serviceId
+            setupWebView(prefs.selectedService.buildUrl(url))
+        }
     }
 
 
@@ -79,28 +150,117 @@ class MainActivity : AppCompatActivity() {
 
     @RequiresPermission(Manifest.permission.ACCESS_NETWORK_STATE)
     private fun handleIntent(intent: Intent?) {
+        // Reopen request coming back from the history screen.
+        intent?.getStringExtra(EXTRA_OPEN_URL)?.let { directUrl ->
+            openWithSelectedService(directUrl)
+            return
+        }
         val mediumUrl = extractMediumUrlFromIntent(intent)
         Log.d(TAG, "Extracted Medium URL: $mediumUrl")
 
         if (mediumUrl != null) {
-            val freediumUrl = convertToFreediumUrl(mediumUrl)
-            Log.d(TAG, "Converting Medium URL: $mediumUrl -> $freediumUrl")
-            setupWebView(freediumUrl)
+            openWithSelectedService(mediumUrl)
         } else {
             Log.d(TAG, "No Medium URL found, showing welcome page")
+            viewModel.currentMediumUrl = null
+            setUrlBarVisible(true)
             showWelcomePage()
         }
     }
 
-    private fun setupEdgeToEdgeForWebView() {
-        ViewCompat.setOnApplyWindowInsetsListener(binding.webView) { view, windowInsets ->
-            val insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars())
+    /** Loads [mediumUrl] through the currently selected service and remembers it. */
+    @RequiresPermission(Manifest.permission.ACCESS_NETWORK_STATE)
+    private fun openWithSelectedService(mediumUrl: String) {
+        val service = prefs.selectedService
+        val serviceUrl = service.buildUrl(mediumUrl)
+        Log.d(TAG, "Opening via ${service.displayName}: $mediumUrl -> $serviceUrl")
+        viewModel.currentMediumUrl = mediumUrl
+        viewModel.lastServiceId = service.id
+        history.add(mediumUrl, prefs.historySize)
+        binding.urlInput.setText(mediumUrl)
+        setUrlBarVisible(false)
+        setupWebView(serviceUrl)
+    }
 
-            // Add padding so content is not hidden behind status or nav bar
-            view.setPadding(insets.left, insets.top, insets.right, insets.bottom)
-
-            WindowInsetsCompat.CONSUMED
+    private fun setupUrlInput() {
+        binding.urlInputLayout.setEndIconOnClickListener { submitUrl() }
+        binding.urlInput.setOnEditorActionListener { _, actionId, event ->
+            val enterPressed = event?.keyCode == KeyEvent.KEYCODE_ENTER &&
+                    event.action == KeyEvent.ACTION_DOWN
+            if (actionId == EditorInfo.IME_ACTION_GO || enterPressed) {
+                submitUrl()
+                true
+            } else {
+                false
+            }
         }
+        // Clear the error as soon as the user edits the field.
+        binding.urlInput.doAfterTextChanged { binding.urlInputLayout.error = null }
+    }
+
+    @RequiresPermission(Manifest.permission.ACCESS_NETWORK_STATE)
+    private fun submitUrl() {
+        val raw = binding.urlInput.text?.toString().orEmpty().trim()
+        val mediumUrl = resolveInputUrl(raw)
+        if (mediumUrl == null) {
+            binding.urlInputLayout.error = getString(R.string.url_input_error)
+            return
+        }
+        hideKeyboard()
+        binding.urlInput.clearFocus()
+        openWithSelectedService(mediumUrl)
+    }
+
+    /** Pulls a loadable URL out of pasted [raw] text, adding https:// when missing. */
+    private fun resolveInputUrl(raw: String): String? {
+        if (raw.isBlank()) return null
+        extractMediumUrlFromText(raw)?.let { return it }
+        if (raw.contains(' ')) return null
+        val candidate = "https://$raw"
+        return if (candidate.toUri().host?.contains('.') == true) candidate else null
+    }
+
+    private fun hideKeyboard() {
+        val imm = getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
+        imm.hideSoftInputFromWindow(binding.urlInput.windowToken, 0)
+    }
+
+    /**
+     * Static pages (welcome/error) are meant to fit the screen, so suppress WebView
+     * scrolling for them; article pages re-enable it (and drive the app-bar collapse).
+     */
+    @SuppressLint("ClickableViewAccessibility")
+    private fun setWebViewScrollEnabled(enabled: Boolean) {
+        if (enabled) {
+            binding.webView.setOnTouchListener(null)
+        } else {
+            binding.webView.setOnTouchListener { _, event ->
+                event.actionMasked == MotionEvent.ACTION_MOVE
+            }
+        }
+    }
+
+    /**
+     * Shows/hides the URL bar (collapsing the app bar). When revealed via [focus]
+     * it grabs focus and pops the keyboard; when hidden it dismisses both.
+     */
+    private fun setUrlBarVisible(visible: Boolean, focus: Boolean = false, animate: Boolean = true) {
+        viewModel.isUrlBarVisible = visible
+        if (binding.urlInputLayout.isVisible != visible) {
+            if (animate) TransitionManager.beginDelayedTransition(binding.appBar)
+            binding.urlInputLayout.isVisible = visible
+        }
+        if (visible && focus) {
+            binding.urlInput.requestFocus()
+            binding.urlInput.post {
+                val imm = getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
+                imm.showSoftInput(binding.urlInput, InputMethodManager.SHOW_IMPLICIT)
+            }
+        } else if (!visible) {
+            hideKeyboard()
+            binding.urlInput.clearFocus()
+        }
+        invalidateOptionsMenu()
     }
 
     private fun extractMediumUrlFromIntent(intent: Intent?): String? {
@@ -146,15 +306,6 @@ class MainActivity : AppCompatActivity() {
         return preferred ?: urls.first()
     }
 
-    private fun convertToFreediumUrl(mediumUrl: String): String {
-        return try {
-            mediumUrl.replace(Regex("""https?://[^/]+/"""), "$FREEDIUM_BASE_URL/")
-        } catch (e: Exception) {
-            Log.e(TAG, "Error converting URL: $mediumUrl", e)
-            mediumUrl
-        }
-    }
-
     @RequiresPermission(Manifest.permission.ACCESS_NETWORK_STATE)
     private fun setupWebView(url: String) {
         if (!isNetworkAvailable()) {
@@ -163,6 +314,7 @@ class MainActivity : AppCompatActivity() {
             return
         }
 
+        setWebViewScrollEnabled(true)
         binding.webView.apply {
             webViewClient = CustomWebViewClient()
             Log.d(TAG, "Loading URL: $url")
@@ -181,6 +333,7 @@ class MainActivity : AppCompatActivity() {
             displayZoomControls = false
             useWideViewPort = true
             loadWithOverviewMode = true
+            textZoom = prefs.textZoom
             cacheMode = WebSettings.LOAD_DEFAULT
             mixedContentMode = WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
             allowFileAccess = true
@@ -196,198 +349,57 @@ class MainActivity : AppCompatActivity() {
 
         // Load the detailed welcome page HTML
         val welcomeHtml = createWelcomePageHtml()
+        setWebViewScrollEnabled(false)
         binding.webView.loadDataWithBaseURL(null, welcomeHtml, "text/html", "UTF-8", null)
     }
 
 
+    private fun themeColor(attr: Int): Int =
+        MaterialColors.getColor(this, attr, Color.BLACK)
+
+    private fun Int.toCssHex(): String = String.format("#%06X", 0xFFFFFF and this)
+
+    private fun Int.toCssRgba(alpha: Double): String =
+        "rgba(${Color.red(this)}, ${Color.green(this)}, ${Color.blue(this)}, $alpha)"
+
+    private fun readAsset(name: String): String =
+        assets.open(name).bufferedReader().use { it.readText() }
+
+    private fun htmlEscape(text: String): String = text
+        .replace("&", "&amp;")
+        .replace("<", "&lt;")
+        .replace(">", "&gt;")
+
     private fun createWelcomePageHtml(): String {
-        return """
-            <!DOCTYPE html>
-            <html>
-                <head>
-                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                    <style>
-                        body {
-                            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-                            text-align: center;
-                            padding: 40px 20px;
-                            background: linear-gradient(135deg, #2c3e50 0%, #34495e 50%, #4a5568 100%);
-                            color: #e2e8f0;
-                            margin: 0;
-                            min-height: 100vh;
-                            display: flex;
-                            flex-direction: column;
-                            justify-content: center;
-                            line-height: 1.6;
-                        }
-                        .container {
-                            max-width: 420px;
-                            margin: 0 auto;
-                        }
-                        .app-icon {
-                            font-size: 3.5em;
-                            margin-bottom: 24px;
-                            filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3));
-                        }
-                        h1 {
-                            font-size: 2.2em;
-                            margin-bottom: 16px;
-                            font-weight: 600;
-                            color: #f8fafc;
-                            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
-                        }
-                        .subtitle {
-                            font-size: 1.1em;
-                            color: #cbd5e0;
-                            margin-bottom: 32px;
-                            font-weight: 300;
-                        }
-                        .instructions {
-                            background: rgba(255,255,255,0.08);
-                            border-radius: 12px;
-                            padding: 24px;
-                            margin: 24px 0;
-                            backdrop-filter: blur(10px);
-                            border: 1px solid rgba(255,255,255,0.1);
-                        }
-                        .step {
-                            display: flex;
-                            align-items: center;
-                            margin: 16px 0;
-                            text-align: left;
-                            font-size: 0.95em;
-                        }
-                        .step-number {
-                            background: #4299e1;
-                            color: white;
-                            border-radius: 50%;
-                            width: 24px;
-                            height: 24px;
-                            display: flex;
-                            align-items: center;
-                            justify-content: center;
-                            font-size: 0.8em;
-                            font-weight: 600;
-                            margin-right: 12px;
-                            flex-shrink: 0;
-                        }
-                        .features {
-                            margin-top: 24px;
-                            font-size: 0.9em;
-                            color: #a0aec0;
-                        }
-                        .feature {
-                            margin: 8px 0;
-                        }
-                        .feature::before {
-                            content: "✓ ";
-                            color: #48bb78;
-                            font-weight: bold;
-                            margin-right: 8px;
-                        }
-                        .ready-indicator {
-                            margin-top: 32px;
-                            padding: 12px 20px;
-                            background: rgba(72, 187, 120, 0.15);
-                            border: 1px solid rgba(72, 187, 120, 0.3);
-                            border-radius: 8px;
-                            color: #68d391;
-                            font-size: 0.9em;
-                            font-weight: 500;
-                        }
-                    </style>
-                </head>
-                <body>
-                    <div class="container">
-                        <div class="app-icon">📚</div>
-                        <h1>FreeView</h1>
-                        <p class="subtitle">Access Medium articles without subscription limits</p>
-                        
-                        <div class="instructions">
-                            <div class="step">
-                                <div class="step-number">1</div>
-                                <div>Find a Medium article you want to read</div>
-                            </div>
-                            <div class="step">
-                                <div class="step-number">2</div>
-                                <div>Tap the Share button in your browser or Medium app</div>
-                            </div>
-                            <div class="step">
-                                <div class="step-number">3</div>
-                                <div>Select "Freeview" from the share menu</div>
-                            </div>
-                            <div class="step">
-                                <div class="step-number">4</div>
-                                <div>Read the full article without any restrictions</div>
-                            </div>
-                        </div>
-                        
-                        <div class="features">
-                            <div class="feature">No subscription required</div>
-                            <div class="feature">Bypass paywall restrictions</div>
-                            <div class="feature">Clean reading experience</div>
-                            <div class="feature">Works with any Medium article</div>
-                        </div>
-                        
-                        <div class="ready-indicator">
-                            🟢 Ready to receive shared links
-                        </div>
-                    </div>
-                </body>
-            </html>
-        """.trimIndent()
+        val surface = themeColor(com.google.android.material.R.attr.colorSurface)
+        val onSurface = themeColor(com.google.android.material.R.attr.colorOnSurface)
+        val onSurfaceVariant = themeColor(com.google.android.material.R.attr.colorOnSurfaceVariant)
+        val primary = themeColor(com.google.android.material.R.attr.colorPrimary)
+        val onPrimary = themeColor(com.google.android.material.R.attr.colorOnPrimary)
+
+        // Inject the theme colors as CSS variables that assets/welcome.css consumes.
+        val vars = buildString {
+            append("--surface:${surface.toCssHex()};")
+            append("--on-surface:${onSurface.toCssHex()};")
+            append("--on-surface-variant:${onSurfaceVariant.toCssHex()};")
+            append("--primary:${primary.toCssHex()};")
+            append("--on-primary:${onPrimary.toCssHex()};")
+            append("--card-bg:${onSurface.toCssRgba(0.05)};")
+            append("--card-border:${onSurface.toCssRgba(0.12)};")
+            append("--chip-bg:${primary.toCssRgba(0.14)};")
+            append("--chip-border:${primary.toCssRgba(0.32)};")
+        }
+        val style = ":root { $vars }\n" + readAsset("welcome.css")
+        return readAsset("welcome.html").replace("/*__STYLE__*/", style)
     }
 
     private fun showErrorPage(title: String, message: String) {
-        val errorHtml = """
-            <!DOCTYPE html>
-            <html>
-                <head>
-                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                    <style>
-                        body {
-                            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-                            text-align: center;
-                            padding: 40px 20px;
-                            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%);
-                            color: white;
-                            margin: 0;
-                            min-height: 100vh;
-                            display: flex;
-                            flex-direction: column;
-                            justify-content: center;
-                        }
-                        .container {
-                            max-width: 400px;
-                            margin: 0 auto;
-                        }
-                        h1 {
-                            font-size: 2.2em;
-                            margin-bottom: 20px;
-                            font-weight: 300;
-                        }
-                        p {
-                            font-size: 1.1em;
-                            line-height: 1.6;
-                            opacity: 0.9;
-                        }
-                        .icon {
-                            font-size: 4em;
-                            margin-bottom: 20px;
-                        }
-                    </style>
-                </head>
-                <body>
-                    <div class="container">
-                        <div class="icon">⚠️</div>
-                        <h1>$title</h1>
-                        <p>$message</p>
-                    </div>
-                </body>
-            </html>
-        """.trimIndent()
-
-        binding.webView.loadData(errorHtml, "text/html", "UTF-8")
+        val html = readAsset("error.html")
+            .replace("/*__STYLE__*/", readAsset("error.css"))
+            .replace("__TITLE__", htmlEscape(title))
+            .replace("__MESSAGE__", htmlEscape(message))
+        setWebViewScrollEnabled(false)
+        binding.webView.loadDataWithBaseURL(null, html, "text/html", "UTF-8", null)
     }
 
     @RequiresPermission(Manifest.permission.ACCESS_NETWORK_STATE)

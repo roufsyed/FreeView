@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <PreferenceCategory app:title="@string/pref_category_reader">
+
+        <ListPreference
+            app:defaultValue="freedium"
+            app:entries="@array/service_entries"
+            app:entryValues="@array/service_values"
+            app:key="reading_service"
+            app:title="@string/pref_service_title"
+            app:useSimpleSummaryProvider="true" />
+
+        <ListPreference
+            app:defaultValue="100"
+            app:entries="@array/text_zoom_entries"
+            app:entryValues="@array/text_zoom_values"
+            app:key="text_zoom"
+            app:title="@string/pref_text_zoom_title"
+            app:useSimpleSummaryProvider="true" />
+
+    </PreferenceCategory>
+
+    <PreferenceCategory app:title="@string/pref_category_appearance">
+
+        <ListPreference
+            app:defaultValue="system"
+            app:entries="@array/theme_entries"
+            app:entryValues="@array/theme_values"
+            app:key="theme"
+            app:title="@string/pref_theme_title"
+            app:useSimpleSummaryProvider="true" />
+
+    </PreferenceCategory>
+
+    <PreferenceCategory app:title="@string/pref_category_history">
+
+        <ListPreference
+            app:defaultValue="50"
+            app:entries="@array/history_size_entries"
+            app:entryValues="@array/history_size_values"
+            app:key="history_size"
+            app:title="@string/pref_history_size_title"
+            app:useSimpleSummaryProvider="true" />
+
+        <Preference
+            app:key="view_history"
+            app:title="@string/pref_view_history_title" />
+
+        <Preference
+            app:key="clear_history"
+            app:title="@string/pref_clear_history_title" />
+
+    </PreferenceCategory>
+
+    <PreferenceCategory app:title="@string/pref_category_about">
+
+        <Preference
+            app:key="clear_cache"
+            app:summary="@string/pref_clear_cache_summary"
+            app:title="@string/pref_clear_cache_title" />
+
+        <Preference
+            app:key="about_version"
+            app:selectable="false"
+            app:title="@string/app_name" />
+
+        <Preference
+            app:key="about_disclaimer"
+            app:selectable="false"
+            app:summary="@string/pref_about_disclaimer_summary"
+            app:title="@string/pref_about_disclaimer_title" />
+
+    </PreferenceCategory>
+
+</PreferenceScreen>
