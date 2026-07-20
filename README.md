@@ -58,7 +58,7 @@ through the free reader service of your choice — no browser clutter, no login.
 
 ## License
 
-Released under the **MIT License**. © 2025 Rouf Syed
+Released under the **MIT License**. © Rouf Syed
 
 ---
 
