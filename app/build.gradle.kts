@@ -19,7 +19,8 @@ android {
 
     buildTypes {
         release {
-            isMinifyEnabled = false
+            isMinifyEnabled = true
+            isShrinkResources = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
@@ -36,6 +37,15 @@ android {
 
     buildFeatures {
         viewBinding = true
+    }
+
+    // Name APKs as <appName>_<buildType>_<versionName>_<versionCode>.apk
+    applicationVariants.all {
+        val variant = this
+        variant.outputs.all {
+            (this as com.android.build.gradle.internal.api.BaseVariantOutputImpl).outputFileName =
+                "${rootProject.name}_${variant.buildType.name}_${variant.versionName}_${variant.versionCode}.apk"
+        }
     }
 }
 
