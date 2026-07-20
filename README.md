@@ -1,85 +1,69 @@
-# FreeView - Unofficial Android Freedium Reader
+# FreeView — Unofficial Medium Reader for Android
 
-A lightweight Android app that renders [Freedium](https://freedium.cfd) pages in a clean, distraction-free WebView interface. This app allows users to view Medium premium articles through Freedium without ads or browser clutter.
+A lightweight, ad-free Android app for reading Medium paywalled articles for free.
+Share a Medium link to FreeView (or paste it in the app) and it opens the article
+through the free reader service of your choice — no browser clutter, no login.
 
-> ⚠️ **Disclaimer:**  
-> This project is not affiliated with, endorsed by, or connected to Medium.com or Freedium.cfd.  
-> It does not host, modify, or distribute any copyrighted content.  
-> The app simply provides a user interface to publicly available Freedium web pages.
-
----
-
-## ✨ Features
-
-- Minimal, fast, and lightweight WebView-based reader
-- Opens Freedium URLs directly inside the app
-- Supports link sharing and deep linking from browser
-- Uses modern Android components (ViewBinding, Kotlin DSL)
-- Compatible with Android 7.0 (API 24) and higher
-- Clean Material Design UI
+> **Disclaimer**
+> Not affiliated with, endorsed by, or connected to Medium.com or any of the reader
+> services listed below. FreeView hosts, scrapes, and modifies nothing — it simply
+> opens publicly available pages in a WebView. Use responsibly and in line with the
+> terms of Medium and whichever service you choose.
 
 ---
 
-## 📸 Screenshots
+## Features
 
-| Homepage | Article View |
-|----------|--------------|
-| ![Homepage](images/homepage.jpeg) | ![Article View](images/articleView.jpeg) |
-
----
-
-## 🛠️ Tech Stack
-
-| Component      | Library / Version                |
-|----------------|----------------------------------|
-| Language       | Kotlin (JVM target 11)           |
-| Architecture   | MVVM                             |
-| UI Toolkit     | Material Components, ViewBinding |
-| Min SDK        | 24                               |
-| Target SDK     | 36                               |
-| Build Tools    | Gradle Kotlin DSL                |
-| Test Framework | JUnit, Espresso                  |
-| Web Rendering  | Android WebView                  |
+- **Multiple reader services** — pick whichever works best:
+  Read-Medium · Freedium · Archive.today · Archive.is · Proxy API
+- **Share or paste** — send a Medium link from any app, or paste it into the in-app URL bar
+- **Reading history** — optionally keep your last 20 / 50 / 100 articles and reopen them with a tap
+- **Settings** — reader service, theme (light / dark / system), article text size, and clear cache & cookies
+- **Clean reader UI** — Material 3, collapsing top bar, edge-to-edge, full light & dark support
+- Works on **Android 7.0 (API 24)** and higher
 
 ---
 
-## 📱 Usage
+## How it works
 
-1. Share any Medium article link to FreeView app
-3. Enjoy a clean reading experience
-
----
-
-## 📄 License
-
-This project is licensed under the [MIT License](./LICENSE).
-
-© 2025 Rouf Syed
-
-```
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-THE SOFTWARE.
-```
+1. Find a Medium article.
+2. **Share** its link to FreeView — or open FreeView and **paste** the link into the top bar.
+3. FreeView rewrites the link for your selected service and opens the full article.
+4. Switch the service (and more) any time in **Settings**, and revisit past reads from **History**.
 
 ---
 
-## ⚠️ Important Notes
+## Screenshots
 
-- This app is a **client-side Freedium viewer**
-- It does not scrape, modify, or host content
-- Use responsibly and in compliance with the terms of Medium.com and Freedium.cfd
+| Home | Article |
+|------|---------|
+| ![Home](images/homepage.jpeg) | ![Article](images/articleView.jpeg) |
+
+---
+
+## Tech Stack
+
+| Component     | Details                                       |
+|---------------|-----------------------------------------------|
+| Language      | Kotlin (JVM target 11)                        |
+| Architecture  | Single-Activity, `ViewModel`-backed UI state  |
+| UI            | Material 3 · ViewBinding · AndroidX Preference |
+| Rendering     | Android WebView (nested-scroll enabled)       |
+| Storage       | SharedPreferences (settings + history)        |
+| Min / Target  | SDK 24 / 36                                    |
+| Build         | Gradle Kotlin DSL + version catalog           |
+| Tests         | JUnit (URL-builder unit tests)                |
+
+---
+
+## License
+
+Released under the **MIT License**. © 2025 Rouf Syed
+
+---
+
+## Important Notes
+
+- FreeView is a **client-side reader** — it does not scrape, modify, host, or store article content.
+- It only opens publicly available pages through the third-party service you select.
+- The availability of any given service, and the results it returns, are outside FreeView's control.
