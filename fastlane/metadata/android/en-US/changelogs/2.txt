@@ -1,0 +1,7 @@
+First release.
+
+- Choose your reader service: Read-Medium, Freedium, Archive.today, Archive.is, or Medium Parser
+- Share or paste a Medium link to open it
+- Optional reading history (last 20 / 50 / 100) with long-press multi-select delete
+- Settings: reader service, theme, and article text size
+- Clean Material 3 UI with light and dark support
