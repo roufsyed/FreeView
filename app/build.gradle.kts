@@ -5,7 +5,7 @@ plugins {
 
 android {
     namespace = "com.rouf.freeview"
-    compileSdk = 37
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.rouf.freeview"

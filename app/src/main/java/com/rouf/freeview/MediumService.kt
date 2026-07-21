@@ -12,7 +12,7 @@ enum class MediumService(
     FREEDIUM("freedium", "Freedium", "https://freedium-mirror.cfd/%s", false),
     ARCHIVE_TODAY("archive_today", "Archive.today", "https://archive.today/?url=%s&run=1", true),
     ARCHIVE_IS("archive_is", "Archive.is", "https://archive.is/?url=%s&run=1", true),
-    PROXY_API("proxy", "Proxy API", "https://medium-parser.vercel.app/?url=%s", true);
+    PROXY_API("proxy", "Medium-Parser", "https://medium-parser.vercel.app/?url=%s", true);
 
     /** Builds the service URL for [mediumUrl], percent-encoding it when required. */
     fun buildUrl(mediumUrl: String): String {
