@@ -38,4 +38,16 @@
     <string name="pref_view_history_title">View history</string>
     <string name="pref_clear_history_title">Clear history</string>
     <string name="pref_clear_history_done">History cleared</string>
+
+    <!-- History multi-select / delete -->
+    <string name="delete">Delete</string>
+    <string name="history_selected_count">%d selected</string>
+    <plurals name="history_delete_confirm">
+        <item quantity="one">Delete %d item?</item>
+        <item quantity="other">Delete %d items?</item>
+    </plurals>
+    <plurals name="history_deleted">
+        <item quantity="one">%d item deleted</item>
+        <item quantity="other">%d items deleted</item>
+    </plurals>
 </resources>
