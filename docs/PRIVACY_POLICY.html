@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FreeView - Privacy Policy</title>
+<style>
+  :root { --accent:#4299e1; --fg:#1a1c1e; --muted:#5b6168; --bg:#ffffff; --card:#f6f8fa; --border:#e3e6ea; }
+  @media (prefers-color-scheme: dark) {
+    :root { --fg:#e3e2e6; --muted:#a9adb3; --bg:#121316; --card:#1c1f24; --border:#2c2f36; }
+  }
+  * { box-sizing: border-box; }
+  body { margin:0; line-height:1.65; color:var(--fg); background:var(--bg);
+         font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; }
+  .wrap { max-width:760px; margin:0 auto; padding:40px 20px 64px; }
+  header { border-bottom:2px solid var(--accent); padding-bottom:16px; }
+  h1 { margin:0 0 4px; font-size:2em; }
+  h2 { margin-top:32px; font-size:1.2em; color:var(--accent); }
+  .updated { color:var(--muted); font-size:.9em; }
+  ul { padding-left:1.2em; }
+  a { color:var(--accent); }
+  code { background:var(--card); padding:1px 5px; border-radius:4px; }
+  footer { margin-top:40px; padding-top:16px; border-top:1px solid var(--border); color:var(--muted); font-size:.85em; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>FreeView - Privacy Policy</h1>
+    <div class="updated">Last updated: July 21, 2026</div>
+  </header>
+
+  <p>FreeView is a free, open-source Android app that opens Medium articles through third-party
+     reader services of your choice. This policy explains what the app does and does not do with data.</p>
+
+  <h2>What FreeView collects</h2>
+  <p><strong>Nothing.</strong> FreeView has no accounts or sign-in, and contains no analytics,
+     advertising, tracking, or telemetry. The developer does not collect, receive, or store any of your data.</p>
+
+  <h2>Data stored on your device</h2>
+  <ul>
+    <li><strong>Reading history (optional):</strong> if enabled, the links of articles you open are saved
+        in the app's private on-device storage so you can reopen them. This list never leaves your device
+        through FreeView. You can limit it (last 20 / 50 / 100), turn it off ("Don't store history"), or clear
+        it anytime in Settings. Uninstalling the app removes it.</li>
+    <li><strong>Settings:</strong> your preferences (reader service, theme, text size) are stored locally.</li>
+    <li><strong>WebView cache &amp; cookies:</strong> Android's WebView may cache data or store cookies for the
+        pages it loads. Clear them anytime via Settings → "Clear cache &amp; cookies".</li>
+  </ul>
+
+  <h2>Network &amp; third-party services</h2>
+  <p>FreeView has no server of its own. To display an article it loads the page in a WebView from the
+     third-party reader service you select:</p>
+  <ul>
+    <li>Read-Medium (readmedium.com)</li>
+    <li>Freedium (freedium-mirror.cfd)</li>
+    <li>Archive.today / Archive.is</li>
+    <li>Medium-parser proxy (medium-parser.vercel.app)</li>
+    <li>Medium (medium.com) and its content servers, as the page requires</li>
+  </ul>
+  <p>When you open an article, the service you chose receives the article URL and the information any web
+     request carries (such as your IP address and user-agent). These services are run by third parties, have
+     their own privacy policies, and are outside FreeView's control - please review the policy of whichever
+     service you use.</p>
+
+  <h2>Permissions</h2>
+  <ul>
+    <li><code>INTERNET</code> - to load article pages.</li>
+    <li><code>ACCESS_NETWORK_STATE</code> - to check for a connection before loading.</li>
+  </ul>
+  <p>FreeView requests no access to location, contacts, files, camera, microphone, or other sensitive data.</p>
+
+  <h2>Data sharing &amp; sale</h2>
+  <p>FreeView collects no personal data, so there is nothing for it to share or sell.</p>
+
+  <h2>Children</h2>
+  <p>FreeView is not directed at children and collects no personal information from anyone.</p>
+
+  <h2>Changes</h2>
+  <p>This policy may be updated as the app evolves; the "last updated" date above will change accordingly.</p>
+
+  <h2>Contact</h2>
+  <p>Questions or concerns: open an issue at
+     <a href="https://github.com/roufsyed/FreeView/issues">github.com/roufsyed/FreeView/issues</a>.</p>
+
+  <footer>FreeView is free/open-source software licensed under the MIT License.
+          Not affiliated with Medium or any of the reader services listed above.</footer>
+</div>
+</body>
+</html>
