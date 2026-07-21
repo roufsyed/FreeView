@@ -26,6 +26,13 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    // Keep AGP's "Dependency metadata" block out of the APK — F-Droid's scanner
+    // rejects it (it's an opaque Google-Play dependency blob).
+    dependenciesInfo {
+        includeInApk = false
+        includeInBundle = false
+    }
+
     signingConfigs {
         create("release") {
             if (keystorePropertiesFile.exists()) {
