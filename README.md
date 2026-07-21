@@ -35,9 +35,9 @@ through the free reader service of your choice — no browser clutter, no login.
 
 ## Screenshots
 
-| Home | Article |
-|------|---------|
-| ![Home](images/homepage.jpeg) | ![Article](images/articleView.jpeg) |
+| Home | Settings | History | Article |
+|------|----------|---------|---------|
+| ![Home](fastlane/metadata/android/en-US/images/phoneScreenshots/1_home.jpeg) | ![Settings](fastlane/metadata/android/en-US/images/phoneScreenshots/2_settings.jpeg) | ![History](fastlane/metadata/android/en-US/images/phoneScreenshots/3_history.jpeg) | ![Article](fastlane/metadata/android/en-US/images/phoneScreenshots/4_articleView.jpeg) |
 
 ---
 
