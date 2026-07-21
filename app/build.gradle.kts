@@ -4,11 +4,11 @@ plugins {
 }
 
 android {
-    namespace = "com.rouf.freediumcfd"
+    namespace = "com.rouf.freeview"
     compileSdk = 37
 
     defaultConfig {
-        applicationId = "com.rouf.freediumcfd"
+        applicationId = "com.rouf.freeview"
         minSdk = 24
         targetSdk = 36
         versionCode = 2

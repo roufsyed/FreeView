@@ -1,4 +1,4 @@
-package com.rouf.freediumcfd
+package com.rouf.freeview
 
 import android.annotation.SuppressLint
 import android.content.Context

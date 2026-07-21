@@ -1,4 +1,4 @@
-package com.rouf.freediumcfd
+package com.rouf.freeview
 
 import org.junit.Test
 

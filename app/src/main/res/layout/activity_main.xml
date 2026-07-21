@@ -41,7 +41,7 @@
 
     </com.google.android.material.appbar.AppBarLayout>
 
-    <com.rouf.freediumcfd.NestedScrollWebView
+    <com.rouf.freeview.NestedScrollWebView
         android:id="@+id/webView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"

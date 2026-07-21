@@ -16,7 +16,7 @@
 -renamesourcefileattribute SourceFile
 
 # --- Custom WebView referenced by name in res/layout/activity_main.xml ---
--keep class com.rouf.freediumcfd.NestedScrollWebView {
+-keep class com.rouf.freeview.NestedScrollWebView {
     public <init>(android.content.Context, android.util.AttributeSet);
     public <init>(android.content.Context, android.util.AttributeSet, int);
 }

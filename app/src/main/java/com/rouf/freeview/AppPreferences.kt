@@ -1,4 +1,4 @@
-package com.rouf.freediumcfd
+package com.rouf.freeview
 
 import android.content.Context
 import androidx.appcompat.app.AppCompatDelegate

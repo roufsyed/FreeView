@@ -1,4 +1,4 @@
-package com.rouf.freediumcfd
+package com.rouf.freeview
 
 import android.Manifest
 import android.annotation.SuppressLint
@@ -31,12 +31,12 @@ import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updatePadding
 import com.google.android.material.color.MaterialColors
-import com.rouf.freediumcfd.databinding.ActivityMainBinding
+import com.rouf.freeview.databinding.ActivityMainBinding
 
 class MainActivity : AppCompatActivity() {
 
     companion object {
-        const val EXTRA_OPEN_URL = "com.rouf.freediumcfd.extra.OPEN_URL"
+        const val EXTRA_OPEN_URL = "com.rouf.freeview.extra.OPEN_URL"
 
         private const val TAG = "MainActivity"
         private const val MEDIUM_DOMAIN = "medium.com"
