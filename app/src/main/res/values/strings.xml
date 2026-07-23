@@ -32,6 +32,7 @@
     <string name="action_history">History</string>
     <string name="history_title">History</string>
     <string name="history_clear">Clear all</string>
+    <string name="history_clear_confirm">Clear all history?</string>
     <string name="history_empty">No history yet</string>
     <string name="pref_category_history">History</string>
     <string name="pref_history_size_title">History size</string>
@@ -50,4 +51,35 @@
         <item quantity="one">%d item deleted</item>
         <item quantity="other">%d items deleted</item>
     </plurals>
+
+    <!-- Bookmarks -->
+    <string name="action_bookmarks">Bookmarks</string>
+    <string name="action_bookmark_add">Add bookmark</string>
+    <string name="action_bookmark_remove">Remove bookmark</string>
+    <string name="bookmark_added">Bookmark added</string>
+    <string name="bookmark_removed">Bookmark removed</string>
+    <string name="bookmark_save_failed">Couldn\'t save bookmark</string>
+    <string name="bookmarks_title">Bookmarks</string>
+    <string name="bookmarks_clear">Clear all</string>
+    <string name="bookmarks_clear_confirm">Clear all bookmarks?</string>
+    <string name="bookmarks_empty">No bookmarks yet</string>
+    <string name="bookmarks_selected_count">%d selected</string>
+    <plurals name="bookmarks_delete_confirm">
+        <item quantity="one">Delete %d bookmark?</item>
+        <item quantity="other">Delete %d bookmarks?</item>
+    </plurals>
+    <plurals name="bookmarks_deleted">
+        <item quantity="one">%d bookmark deleted</item>
+        <item quantity="other">%d bookmarks deleted</item>
+    </plurals>
+    <plurals name="bookmarks_added">
+        <item quantity="one">Bookmarked</item>
+        <item quantity="other">%d bookmarked</item>
+    </plurals>
+
+    <!-- Settings: bookmarks -->
+    <string name="pref_category_bookmarks">Bookmarks</string>
+    <string name="pref_view_bookmarks_title">View bookmarks</string>
+    <string name="pref_clear_bookmarks_title">Clear bookmarks</string>
+    <string name="pref_clear_bookmarks_done">Bookmarks cleared</string>
 </resources>

@@ -23,14 +23,13 @@ import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.color.MaterialColors
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 
-class HistoryActivity : AppCompatActivity() {
+class BookmarksActivity : AppCompatActivity() {
 
-    private lateinit var store: HistoryStore
-    private val bookmarks by lazy { BookmarkStore(this) }
+    private lateinit var store: BookmarkStore
     private lateinit var listView: RecyclerView
     private lateinit var emptyView: View
 
-    private val adapter = HistoryAdapter(
+    private val adapter = BookmarkAdapter(
         onOpen = ::openArticle,
         onSelectionStarted = ::enterSelectionUi,
         onSelectionChanged = ::onSelectionChanged,
@@ -38,14 +37,14 @@ class HistoryActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_history)
+        setContentView(R.layout.activity_bookmarks)
 
-        store = HistoryStore(this)
+        store = BookmarkStore(this)
 
         setSupportActionBar(findViewById<MaterialToolbar>(R.id.toolbar))
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
-        listView = findViewById(R.id.history_list)
+        listView = findViewById(R.id.bookmarks_list)
         emptyView = findViewById(R.id.empty_view)
         listView.layoutManager = LinearLayoutManager(this)
         listView.adapter = adapter
@@ -60,15 +59,14 @@ class HistoryActivity : AppCompatActivity() {
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        menuInflater.inflate(R.menu.history_menu, menu)
+        menuInflater.inflate(R.menu.bookmarks_menu, menu)
         return true
     }
 
     override fun onPrepareOptionsMenu(menu: Menu): Boolean {
         val selecting = adapter.selectionMode
-        menu.findItem(R.id.action_bookmark_selected)?.isVisible = selecting
         menu.findItem(R.id.action_delete_selected)?.isVisible = selecting
-        menu.findItem(R.id.action_clear_history)?.isVisible = !selecting && adapter.itemCount > 0
+        menu.findItem(R.id.action_clear_bookmarks)?.isVisible = !selecting && adapter.itemCount > 0
         return super.onPrepareOptionsMenu(menu)
     }
 
@@ -78,15 +76,11 @@ class HistoryActivity : AppCompatActivity() {
                 if (adapter.selectionMode) exitSelection() else finish()
                 true
             }
-            R.id.action_bookmark_selected -> {
-                bookmarkSelected()
-                true
-            }
             R.id.action_delete_selected -> {
                 confirmDeleteSelected()
                 true
             }
-            R.id.action_clear_history -> {
+            R.id.action_clear_bookmarks -> {
                 confirmClearAll()
                 true
             }
@@ -115,13 +109,13 @@ class HistoryActivity : AppCompatActivity() {
     }
 
     private fun updateSelectionTitle() {
-        supportActionBar?.title = getString(R.string.history_selected_count, adapter.selectedCount)
+        supportActionBar?.title = getString(R.string.bookmarks_selected_count, adapter.selectedCount)
     }
 
     private fun exitSelection() {
         adapter.exitSelection()
         supportActionBar?.setHomeAsUpIndicator(null)
-        supportActionBar?.setTitle(R.string.history_title)
+        supportActionBar?.setTitle(R.string.bookmarks_title)
         invalidateOptionsMenu()
     }
 
@@ -129,47 +123,33 @@ class HistoryActivity : AppCompatActivity() {
         val urls = adapter.selectedUrls()
         if (urls.isEmpty()) return
         MaterialAlertDialogBuilder(this)
-            .setTitle(resources.getQuantityString(R.plurals.history_delete_confirm, urls.size, urls.size))
+            .setTitle(resources.getQuantityString(R.plurals.bookmarks_delete_confirm, urls.size, urls.size))
             .setNegativeButton(android.R.string.cancel, null)
             .setPositiveButton(R.string.delete) { _, _ ->
-                urls.forEach { store.remove(it) }
+                store.removeAll(urls)
                 exitSelection()
                 refresh()
                 Toast.makeText(
                     this,
-                    resources.getQuantityString(R.plurals.history_deleted, urls.size, urls.size),
+                    resources.getQuantityString(R.plurals.bookmarks_deleted, urls.size, urls.size),
                     Toast.LENGTH_SHORT,
                 ).show()
             }
             .show()
     }
 
-    /** Bookmarks every selected history entry, then leaves selection mode. */
-    private fun bookmarkSelected() {
-        val urls = adapter.selectedUrls()
-        if (urls.isEmpty()) return
-        bookmarks.addAll(urls)
-        exitSelection()
-        Toast.makeText(
-            this,
-            resources.getQuantityString(R.plurals.bookmarks_added, urls.size, urls.size),
-            Toast.LENGTH_SHORT,
-        ).show()
-    }
-
-    /** Confirms before clearing the whole history. */
     private fun confirmClearAll() {
         MaterialAlertDialogBuilder(this)
-            .setTitle(R.string.history_clear_confirm)
+            .setTitle(R.string.bookmarks_clear_confirm)
             .setNegativeButton(android.R.string.cancel, null)
-            .setPositiveButton(R.string.history_clear) { _, _ ->
+            .setPositiveButton(R.string.bookmarks_clear) { _, _ ->
                 store.clear()
                 refresh()
             }
             .show()
     }
 
-    /** Open the article in a new view on top of this screen, so Back returns here (not exit). */
+    /** Open the bookmark in a new view on top of this screen, so Back returns here (not exit). */
     private fun openArticle(url: String) {
         startActivity(
             Intent(this, MainActivity::class.java)
@@ -179,8 +159,8 @@ class HistoryActivity : AppCompatActivity() {
 
     private fun applyWindowInsets() {
         val appBar = findViewById<View>(R.id.app_bar)
-        val content = findViewById<View>(R.id.history_content)
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.history_root)) { _, insets ->
+        val content = findViewById<View>(R.id.bookmarks_content)
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.bookmarks_root)) { _, insets ->
             val bars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             appBar.updatePadding(top = bars.top, left = bars.left, right = bars.right)
             content.updatePadding(left = bars.left, right = bars.right, bottom = bars.bottom)
@@ -188,11 +168,11 @@ class HistoryActivity : AppCompatActivity() {
         }
     }
 
-    private class HistoryAdapter(
+    private class BookmarkAdapter(
         private val onOpen: (String) -> Unit,
         private val onSelectionStarted: () -> Unit,
         private val onSelectionChanged: () -> Unit,
-    ) : RecyclerView.Adapter<HistoryAdapter.VH>() {
+    ) : RecyclerView.Adapter<BookmarkAdapter.VH>() {
 
         private val items = mutableListOf<String>()
         private val selected = linkedSetOf<String>()
@@ -277,6 +257,5 @@ class HistoryActivity : AppCompatActivity() {
                 }
             }
         }
-
     }
 }

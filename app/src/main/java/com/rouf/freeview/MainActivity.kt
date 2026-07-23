@@ -7,7 +7,6 @@ import android.graphics.Color
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.os.Bundle
-import android.transition.TransitionManager
 import android.util.Log
 import android.view.KeyEvent
 import android.view.Menu
@@ -20,6 +19,7 @@ import android.webkit.WebResourceResponse
 import android.webkit.WebSettings
 import android.webkit.WebView
 import android.webkit.WebViewClient
+import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.annotation.RequiresPermission
 import androidx.appcompat.app.AppCompatActivity
@@ -46,7 +46,11 @@ class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
     private val prefs by lazy { AppPreferences(this) }
     private val history by lazy { HistoryStore(this) }
+    private val bookmarks by lazy { BookmarkStore(this) }
     private val viewModel: MainViewModel by viewModels()
+
+    /** True while the current navigation hit onReceivedError; blocks a premature ARTICLE promotion. */
+    private var loadErrored = false
 
     @RequiresPermission(Manifest.permission.ACCESS_NETWORK_STATE)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -83,7 +87,6 @@ class MainActivity : AppCompatActivity() {
     /** Re-applies state kept in [viewModel] after a configuration change (e.g. rotation). */
     @RequiresPermission(Manifest.permission.ACCESS_NETWORK_STATE)
     private fun restoreState() {
-        setUrlBarVisible(viewModel.isUrlBarVisible, animate = false)
         val url = viewModel.currentMediumUrl
         if (url != null) {
             setupWebView(prefs.selectedService.buildUrl(url))
@@ -98,24 +101,39 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onPrepareOptionsMenu(menu: Menu): Boolean {
-        // The search action toggles the URL bar; its icon reflects the current state.
-        menu.findItem(R.id.action_toggle_search)?.apply {
-            val showingSearch = binding.urlInputLayout.isVisible
-            setIcon(if (showingSearch) R.drawable.ic_close_24 else R.drawable.ic_search_24)
-            setTitle(if (showingSearch) R.string.action_close_search else R.string.action_search)
+        // The bookmark star is only offered on a loaded article; its icon reflects saved state.
+        val canBookmark = viewModel.pageState == MainViewModel.PageState.ARTICLE &&
+                viewModel.currentMediumUrl != null
+        menu.findItem(R.id.action_toggle_bookmark)?.apply {
+            isVisible = canBookmark
+            if (canBookmark) {
+                val saved = viewModel.isCurrentBookmarked
+                setIcon(if (saved) R.drawable.ic_bookmark_24 else R.drawable.ic_bookmark_border_24)
+                setTitle(if (saved) R.string.action_bookmark_remove else R.string.action_bookmark_add)
+            }
         }
+        // The History/Bookmarks list icons belong to the home screen; hide them while an
+        // article is loading or open (Back returns to wherever it was opened from). Settings
+        // stays available so the reader service / text size can be changed mid-article.
+        val readingArticle = viewModel.pageState == MainViewModel.PageState.LOADING ||
+                viewModel.pageState == MainViewModel.PageState.ARTICLE
+        menu.findItem(R.id.action_history)?.isVisible = !readingArticle
+        menu.findItem(R.id.action_bookmarks)?.isVisible = !readingArticle
         return super.onPrepareOptionsMenu(menu)
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
-            R.id.action_toggle_search -> {
-                val show = !binding.urlInputLayout.isVisible
-                setUrlBarVisible(show, focus = show)
+            R.id.action_toggle_bookmark -> {
+                viewModel.currentMediumUrl?.let { toggleBookmark(it) }
                 true
             }
             R.id.action_history -> {
                 startActivity(Intent(this, HistoryActivity::class.java))
+                true
+            }
+            R.id.action_bookmarks -> {
+                startActivity(Intent(this, BookmarksActivity::class.java))
                 true
             }
             R.id.action_settings -> {
@@ -126,12 +144,32 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    /** Adds or removes the current article from bookmarks, gating UI updates on a successful write. */
+    private fun toggleBookmark(url: String) {
+        val wasBookmarked = viewModel.isCurrentBookmarked
+        val committed = if (wasBookmarked) bookmarks.remove(url) else bookmarks.add(url)
+        if (!committed) {
+            Toast.makeText(this, R.string.bookmark_save_failed, Toast.LENGTH_SHORT).show()
+            return
+        }
+        viewModel.isCurrentBookmarked = !wasBookmarked
+        invalidateOptionsMenu()
+        Toast.makeText(
+            this,
+            if (viewModel.isCurrentBookmarked) R.string.bookmark_added else R.string.bookmark_removed,
+            Toast.LENGTH_SHORT,
+        ).show()
+    }
+
     @RequiresPermission(Manifest.permission.ACCESS_NETWORK_STATE)
     override fun onResume() {
         super.onResume()
         // Reflect settings that may have changed while in the Settings screen.
         binding.webView.settings.textZoom = prefs.textZoom
         val url = viewModel.currentMediumUrl ?: return
+        // A bookmark may have been added/removed on the Bookmarks/Settings screen; re-sync the star.
+        viewModel.isCurrentBookmarked = bookmarks.contains(url)
+        invalidateOptionsMenu()
         val serviceId = prefs.selectedService.id
         if (serviceId != viewModel.lastServiceId) {
             Log.d(TAG, "Service changed to $serviceId; reloading current article")
@@ -163,7 +201,6 @@ class MainActivity : AppCompatActivity() {
         } else {
             Log.d(TAG, "No Medium URL found, showing welcome page")
             viewModel.currentMediumUrl = null
-            setUrlBarVisible(true)
             showWelcomePage()
         }
     }
@@ -176,9 +213,9 @@ class MainActivity : AppCompatActivity() {
         Log.d(TAG, "Opening via ${service.displayName}: $mediumUrl -> $serviceUrl")
         viewModel.currentMediumUrl = mediumUrl
         viewModel.lastServiceId = service.id
+        viewModel.isCurrentBookmarked = bookmarks.contains(mediumUrl)
         history.add(mediumUrl, prefs.historySize)
         binding.urlInput.setText(mediumUrl)
-        setUrlBarVisible(false)
         setupWebView(serviceUrl)
     }
 
@@ -225,6 +262,18 @@ class MainActivity : AppCompatActivity() {
         imm.hideSoftInputFromWindow(binding.urlInput.windowToken, 0)
     }
 
+    /** Shows the URL field only on welcome/error pages, and the loading bar only while an article loads. */
+    private fun updateUrlBarVisibility() {
+        val state = viewModel.pageState
+        val showUrlBar = state == MainViewModel.PageState.WELCOME || state == MainViewModel.PageState.ERROR
+        binding.urlInputLayout.isVisible = showUrlBar
+        if (!showUrlBar) {
+            hideKeyboard()
+            binding.urlInput.clearFocus()
+        }
+        binding.loadingBar.isVisible = state == MainViewModel.PageState.LOADING
+    }
+
     /**
      * Static pages (welcome/error) are meant to fit the screen, so suppress WebView
      * scrolling for them; article pages re-enable it (and drive the app-bar collapse).
@@ -238,29 +287,6 @@ class MainActivity : AppCompatActivity() {
                 event.actionMasked == MotionEvent.ACTION_MOVE
             }
         }
-    }
-
-    /**
-     * Shows/hides the URL bar (collapsing the app bar). When revealed via [focus]
-     * it grabs focus and pops the keyboard; when hidden it dismisses both.
-     */
-    private fun setUrlBarVisible(visible: Boolean, focus: Boolean = false, animate: Boolean = true) {
-        viewModel.isUrlBarVisible = visible
-        if (binding.urlInputLayout.isVisible != visible) {
-            if (animate) TransitionManager.beginDelayedTransition(binding.appBar)
-            binding.urlInputLayout.isVisible = visible
-        }
-        if (visible && focus) {
-            binding.urlInput.requestFocus()
-            binding.urlInput.post {
-                val imm = getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
-                imm.showSoftInput(binding.urlInput, InputMethodManager.SHOW_IMPLICIT)
-            }
-        } else if (!visible) {
-            hideKeyboard()
-            binding.urlInput.clearFocus()
-        }
-        invalidateOptionsMenu()
     }
 
     private fun extractMediumUrlFromIntent(intent: Intent?): String? {
@@ -314,6 +340,12 @@ class MainActivity : AppCompatActivity() {
             return
         }
 
+        // A real article load is starting; the star becomes available once it finishes loading.
+        loadErrored = false
+        viewModel.pageState = MainViewModel.PageState.LOADING
+        invalidateOptionsMenu()
+        updateUrlBarVisibility()
+
         setWebViewScrollEnabled(true)
         binding.webView.apply {
             webViewClient = CustomWebViewClient()
@@ -346,6 +378,9 @@ class MainActivity : AppCompatActivity() {
 
     private fun showWelcomePage() {
         Log.d(TAG, "Showing welcome page")
+        viewModel.pageState = MainViewModel.PageState.WELCOME
+        invalidateOptionsMenu()
+        updateUrlBarVisibility()
 
         // Load the detailed welcome page HTML
         val welcomeHtml = createWelcomePageHtml()
@@ -394,6 +429,9 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun showErrorPage(title: String, message: String) {
+        viewModel.pageState = MainViewModel.PageState.ERROR
+        invalidateOptionsMenu()
+        updateUrlBarVisibility()
         val html = readAsset("error.html")
             .replace("/*__STYLE__*/", readAsset("error.css"))
             .replace("__TITLE__", htmlEscape(title))
@@ -418,11 +456,20 @@ class MainActivity : AppCompatActivity() {
         override fun onPageStarted(view: WebView?, url: String?, favicon: android.graphics.Bitmap?) {
             super.onPageStarted(view, url, favicon)
             Log.d(TAG, "Page loading started: $url")
+            // A fresh navigation for the current article (also covers the error-recovery reload).
+            loadErrored = false
         }
 
         override fun onPageFinished(view: WebView?, url: String?) {
             super.onPageFinished(view, url)
             Log.d(TAG, "Page loaded successfully: $url")
+            // Promote to ARTICLE only for a clean article load — never welcome/error pages, and
+            // never a load that errored (the cache-miss reload promotes on its successful finish).
+            if (viewModel.pageState == MainViewModel.PageState.LOADING && !loadErrored) {
+                viewModel.pageState = MainViewModel.PageState.ARTICLE
+                invalidateOptionsMenu()
+                updateUrlBarVisibility()
+            }
         }
 
         override fun onReceivedError(
@@ -433,6 +480,7 @@ class MainActivity : AppCompatActivity() {
         ) {
             super.onReceivedError(view, errorCode, description, failingUrl)
             Log.e(TAG, "WebView error: $description (Code: $errorCode) for URL: $failingUrl")
+            loadErrored = true
 
             when (errorCode) {
                 ERROR_CONNECT -> {

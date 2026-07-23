@@ -6,7 +6,7 @@
 
     <application
         android:name=".App"
-        android:allowBackup="true"
+        android:allowBackup="false"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
         android:icon="@mipmap/ic_launcher"
@@ -41,6 +41,12 @@
             android:name=".HistoryActivity"
             android:exported="false"
             android:label="@string/history_title"
+            android:parentActivityName=".MainActivity" />
+
+        <activity
+            android:name=".BookmarksActivity"
+            android:exported="false"
+            android:label="@string/bookmarks_title"
             android:parentActivityName=".MainActivity" />
     </application>
 

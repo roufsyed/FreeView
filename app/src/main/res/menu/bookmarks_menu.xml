@@ -3,20 +3,14 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <item
-        android:id="@+id/action_bookmark_selected"
-        android:icon="@drawable/ic_bookmark_border_24"
-        android:title="@string/action_bookmark_add"
-        app:showAsAction="ifRoom" />
-
-    <item
         android:id="@+id/action_delete_selected"
         android:icon="@drawable/ic_delete_24"
         android:title="@string/delete"
         app:showAsAction="ifRoom" />
 
     <item
-        android:id="@+id/action_clear_history"
-        android:title="@string/history_clear"
+        android:id="@+id/action_clear_bookmarks"
+        android:title="@string/bookmarks_clear"
         app:showAsAction="ifRoom" />
 
 </menu>

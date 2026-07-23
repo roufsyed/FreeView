@@ -3,21 +3,27 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <item
-        android:id="@+id/action_toggle_search"
-        android:icon="@drawable/ic_search_24"
-        android:title="@string/action_search"
-        app:showAsAction="ifRoom" />
+        android:id="@+id/action_toggle_bookmark"
+        android:icon="@drawable/ic_bookmark_border_24"
+        android:title="@string/action_bookmark_add"
+        app:showAsAction="always" />
 
     <item
         android:id="@+id/action_history"
         android:icon="@drawable/ic_history_24"
         android:title="@string/action_history"
-        app:showAsAction="ifRoom" />
+        app:showAsAction="always" />
+
+    <item
+        android:id="@+id/action_bookmarks"
+        android:icon="@drawable/ic_bookmarks_24"
+        android:title="@string/action_bookmarks"
+        app:showAsAction="always" />
 
     <item
         android:id="@+id/action_settings"
         android:icon="@drawable/ic_settings_24"
         android:title="@string/action_settings"
-        app:showAsAction="ifRoom" />
+        app:showAsAction="always" />
 
 </menu>

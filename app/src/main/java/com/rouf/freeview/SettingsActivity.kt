@@ -16,6 +16,7 @@ import androidx.preference.ListPreference
 import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
 import com.google.android.material.appbar.MaterialToolbar
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 
 class SettingsActivity : AppCompatActivity() {
 
@@ -95,6 +96,31 @@ class SettingsActivity : AppCompatActivity() {
                         R.string.pref_clear_history_done,
                         Toast.LENGTH_SHORT,
                     ).show()
+                    true
+                }
+
+            // Open the bookmarks screen.
+            findPreference<Preference>(AppPreferences.KEY_VIEW_BOOKMARKS)
+                ?.setOnPreferenceClickListener {
+                    startActivity(Intent(requireContext(), BookmarksActivity::class.java))
+                    true
+                }
+
+            // Clear stored bookmarks — deliberate saves, so confirm first.
+            findPreference<Preference>(AppPreferences.KEY_CLEAR_BOOKMARKS)
+                ?.setOnPreferenceClickListener {
+                    MaterialAlertDialogBuilder(requireContext())
+                        .setTitle(R.string.bookmarks_clear_confirm)
+                        .setNegativeButton(android.R.string.cancel, null)
+                        .setPositiveButton(R.string.bookmarks_clear) { _, _ ->
+                            BookmarkStore(requireContext()).clear()
+                            Toast.makeText(
+                                requireContext(),
+                                R.string.pref_clear_bookmarks_done,
+                                Toast.LENGTH_SHORT,
+                            ).show()
+                        }
+                        .show()
                     true
                 }
 

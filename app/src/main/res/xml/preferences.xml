@@ -53,6 +53,18 @@
 
     </PreferenceCategory>
 
+    <PreferenceCategory app:title="@string/pref_category_bookmarks">
+
+        <Preference
+            app:key="view_bookmarks"
+            app:title="@string/pref_view_bookmarks_title" />
+
+        <Preference
+            app:key="clear_bookmarks"
+            app:title="@string/pref_clear_bookmarks_title" />
+
+    </PreferenceCategory>
+
     <PreferenceCategory app:title="@string/pref_category_about">
 
         <Preference

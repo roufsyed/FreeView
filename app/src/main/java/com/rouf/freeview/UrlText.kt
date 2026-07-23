@@ -1,0 +1,47 @@
+package com.rouf.freeview
+
+/**
+ * Pure-JVM URL helpers shared by the history and bookmark lists/stores.
+ *
+ * These use only string operations (never android.net.Uri or java.net.URI, which throw on
+ * malformed input and aren't available in plain JVM unit tests). Every function is total —
+ * it returns a sensible fallback rather than throwing — so it is safe to call from the main
+ * article screen and is directly unit-testable (see UrlTextTest).
+ */
+
+/** A best-effort readable title from a Medium slug: drops the trailing id and spaces the words. */
+fun deriveArticleTitle(url: String): String {
+    val segment = lastPathSegment(url)?.takeIf { it.isNotBlank() } ?: return url
+    val parts = segment.split('-')
+    val words = if (parts.size > 1) parts.dropLast(1) else parts
+    val title = words.joinToString(" ").trim()
+    return if (title.isBlank()) url else title.replaceFirstChar { it.uppercase() }
+}
+
+/**
+ * A canonical key for de-duplicating bookmarks: folds the scheme to https, lowercases the
+ * host, and drops the query and fragment (a Medium article's identity is its path, while the
+ * query is tracking noise like ?source=/?sk=). The original URL is what gets stored; this is
+ * only the comparison key.
+ */
+fun normalizeBookmarkUrl(url: String): String = runCatching {
+    val raw = url.trim()
+    if (raw.isEmpty()) return@runCatching ""
+    val noQuery = raw.substringBefore('#').substringBefore('?')
+    val schemeIdx = noQuery.indexOf("://")
+    val afterScheme = if (schemeIdx >= 0) noQuery.substring(schemeIdx + 3) else noQuery
+    val slash = afterScheme.indexOf('/')
+    val host = (if (slash >= 0) afterScheme.substring(0, slash) else afterScheme).lowercase()
+    val path = (if (slash >= 0) afterScheme.substring(slash) else "").trimEnd('/')
+    "https://$host$path"
+}.getOrDefault(url.trim())
+
+/** The last non-empty path segment, or null when there is no path (host-only or scheme-less). */
+private fun lastPathSegment(url: String): String? = runCatching {
+    val noQuery = url.substringBefore('#').substringBefore('?')
+    val afterScheme = noQuery.substringAfter("://", "")
+    if (afterScheme.isEmpty()) return@runCatching null
+    val slash = afterScheme.indexOf('/')
+    if (slash < 0) return@runCatching null
+    afterScheme.substring(slash).trim('/').substringAfterLast('/').takeIf { it.isNotEmpty() }
+}.getOrNull()

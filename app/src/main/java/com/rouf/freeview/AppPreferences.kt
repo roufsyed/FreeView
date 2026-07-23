@@ -45,5 +45,8 @@ class AppPreferences(context: Context) {
         const val KEY_VIEW_HISTORY = "view_history"
         const val KEY_CLEAR_HISTORY = "clear_history"
         const val DEFAULT_HISTORY_SIZE = "50"
+
+        const val KEY_VIEW_BOOKMARKS = "view_bookmarks"
+        const val KEY_CLEAR_BOOKMARKS = "clear_bookmarks"
     }
 }
