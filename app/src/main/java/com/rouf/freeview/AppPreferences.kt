@@ -32,6 +32,7 @@ class AppPreferences(context: Context) {
         const val KEY_SERVICE = "reading_service"
         const val KEY_THEME = "theme"
         const val KEY_TEXT_ZOOM = "text_zoom"
+        const val KEY_OPEN_DEFAULT = "open_default"
         const val KEY_CLEAR_CACHE = "clear_cache"
         const val KEY_ABOUT = "about_version"
 

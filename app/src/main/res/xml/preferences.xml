@@ -19,6 +19,11 @@
             app:title="@string/pref_text_zoom_title"
             app:useSimpleSummaryProvider="true" />
 
+        <Preference
+            app:key="open_default"
+            app:summary="@string/pref_open_default_summary"
+            app:title="@string/pref_open_default_title" />
+
     </PreferenceCategory>
 
     <PreferenceCategory app:title="@string/pref_category_appearance">

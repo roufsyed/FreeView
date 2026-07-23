@@ -23,6 +23,10 @@ captures/
 *.o
 *.so
 *.out
+/app/release/
+
+# Local database snapshot (not part of the app)
+kls_database.db
 
 # Keystore files (sensitive)
 *.jks

@@ -39,7 +39,6 @@ class MainActivity : AppCompatActivity() {
         const val EXTRA_OPEN_URL = "com.rouf.freeview.extra.OPEN_URL"
 
         private const val TAG = "MainActivity"
-        private const val MEDIUM_DOMAIN = "medium.com"
         private const val URL_REGEX = "(https?://[\\w.-]+(?:/[\\w./?=&%\\-_~#@!$'()*+,;:]*)?)"
     }
 
@@ -188,9 +187,13 @@ class MainActivity : AppCompatActivity() {
 
     @RequiresPermission(Manifest.permission.ACCESS_NETWORK_STATE)
     private fun handleIntent(intent: Intent?) {
-        // Reopen request coming back from the history screen.
-        intent?.getStringExtra(EXTRA_OPEN_URL)?.let { directUrl ->
-            openWithSelectedService(directUrl)
+        // Reopen from History/Bookmarks arrives as an explicit, actionless intent carrying
+        // EXTRA_OPEN_URL. Honor it only when there is no action (the only legitimate producers)
+        // and only for an http(s) URL, so a crafted implicit intent can't smuggle a dangerous
+        // scheme through this host-unrestricted branch (history/bookmarks hold custom-domain URLs).
+        val reopenUrl = intent?.takeIf { it.action == null }?.getStringExtra(EXTRA_OPEN_URL)
+        if (reopenUrl != null && isHttpUrl(reopenUrl.toUri())) {
+            openWithSelectedService(reopenUrl)
             return
         }
         val mediumUrl = extractMediumUrlFromIntent(intent)
@@ -291,6 +294,9 @@ class MainActivity : AppCompatActivity() {
 
     private fun extractMediumUrlFromIntent(intent: Intent?): String? {
         return when (intent?.action) {
+            // Deep-link tap: the intent carries one authoritative Uri; gate it by scheme (any host,
+            // like a pasted link) so it opens through the reader service.
+            Intent.ACTION_VIEW -> intent.data?.takeIf { isAcceptableViewUri(it) }?.toString()
             Intent.ACTION_SEND -> extractUrlFromSingleText(intent)
             Intent.ACTION_SEND_MULTIPLE -> extractUrlFromMultipleTexts(intent)
             else -> null
@@ -322,8 +328,8 @@ class MainActivity : AppCompatActivity() {
         val preferred = urls.firstOrNull { url ->
             try {
                 val host = url.toUri().host ?: return@firstOrNull false
-                host.equals(MEDIUM_DOMAIN, ignoreCase = true) ||
-                        host.endsWith(".${MEDIUM_DOMAIN}", ignoreCase = true)
+                host.equals(MEDIUM_HOST, ignoreCase = true) ||
+                        host.endsWith(".${MEDIUM_HOST}", ignoreCase = true)
             } catch (_: Exception) {
                 false
             }
@@ -368,8 +374,10 @@ class MainActivity : AppCompatActivity() {
             textZoom = prefs.textZoom
             cacheMode = WebSettings.LOAD_DEFAULT
             mixedContentMode = WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
-            allowFileAccess = true
-            allowContentAccess = true
+            // Only remote https service URLs (and inlined welcome/error HTML) are ever loaded —
+            // no file:// or content:// loads — so deny both to remove a local-read/exfiltration primitive.
+            allowFileAccess = false
+            allowContentAccess = false
             setGeolocationEnabled(false)
             setSupportMultipleWindows(false)
         }

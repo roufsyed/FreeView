@@ -1,7 +1,10 @@
 package com.rouf.freeview
 
 import android.content.Intent
+import android.net.Uri
+import android.os.Build
 import android.os.Bundle
+import android.provider.Settings
 import android.view.View
 import android.webkit.CookieManager
 import android.webkit.WebStorage
@@ -60,6 +63,15 @@ class SettingsActivity : AppCompatActivity() {
 
             // Show the app version in the About section.
             findPreference<Preference>(AppPreferences.KEY_ABOUT)?.summary = versionSummary()
+
+            // Open Android's "Open by default" screen so the user can make FreeView the default
+            // handler for medium.com links (unverified web links aren't offered automatically on
+            // Android 12+).
+            findPreference<Preference>(AppPreferences.KEY_OPEN_DEFAULT)
+                ?.setOnPreferenceClickListener {
+                    openDefaultAppSettings()
+                    true
+                }
 
             // Apply the theme immediately when it changes.
             findPreference<ListPreference>(AppPreferences.KEY_THEME)
@@ -146,6 +158,19 @@ class SettingsActivity : AppCompatActivity() {
             AppPreferences.THEME_LIGHT -> AppCompatDelegate.MODE_NIGHT_NO
             AppPreferences.THEME_DARK -> AppCompatDelegate.MODE_NIGHT_YES
             else -> AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM
+        }
+
+        /** Sends the user to Android's per-app "Open by default" screen (app details as fallback). */
+        private fun openDefaultAppSettings() {
+            val uri = Uri.fromParts("package", requireContext().packageName, null)
+            val primary = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                Intent(Settings.ACTION_APP_OPEN_BY_DEFAULT_SETTINGS, uri)
+            } else {
+                Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, uri)
+            }
+            if (runCatching { startActivity(primary) }.isFailure) {
+                runCatching { startActivity(Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, uri)) }
+            }
         }
 
         private fun clearWebViewData() {

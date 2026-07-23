@@ -15,6 +15,8 @@
     <!-- Settings entries -->
     <string name="pref_service_title">Reading service</string>
     <string name="pref_text_zoom_title">Article text size</string>
+    <string name="pref_open_default_title">Open Medium links in FreeView</string>
+    <string name="pref_open_default_summary">Choose FreeView when you tap a link to open it here</string>
     <string name="pref_theme_title">Theme</string>
     <string name="pref_clear_cache_title">Clear cache &amp; cookies</string>
     <string name="pref_clear_cache_summary">Remove locally stored article data and cookies</string>

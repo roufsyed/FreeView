@@ -3,7 +3,7 @@ FreeView is a lightweight, ad-free reader for Medium articles. Share a Medium li
 <b>Features</b>
 <ul>
 <li>Multiple reader services: Read-Medium, Freedium, Archive.today, Archive.is, and a Medium parser vercel app</li>
-<li>Open a link by sharing it from any app, or by pasting it into the in-app address bar</li>
+<li>Open a link by sharing it from any app, pasting it into the in-app address bar, or tapping a medium.com link and choosing FreeView</li>
 <li>Optional reading history - keep your last 20, 50, or 100 articles and reopen them with a tap</li>
 <li>Multi-select in the history list (long-press) to delete entries</li>
 <li>Settings for the reader service, theme (light / dark / system), and article text size</li>
@@ -11,7 +11,7 @@ FreeView is a lightweight, ad-free reader for Medium articles. Share a Medium li
 </ul>
 
 <b>How it works</b>
-<p>Pick a reader service in Settings. When you share or paste a Medium link, FreeView rewrites it for that service and loads the article. You can switch services at any time and revisit past reads from the History screen.</p>
+<p>Pick a reader service in Settings. Share or paste a Medium link - or tap a link and choose FreeView - and it rewrites the link for that service and loads the article. You can switch services any time and revisit past reads from History or your saved Bookmarks. Tapping works for Medium articles on any domain (medium.com and custom publication domains alike); FreeView is offered for web links in the system "Open with" chooser.</p>
 
 <b>Note</b>
 <p>FreeView is not affiliated with Medium or any of the reader services it opens. It hosts, scrapes, and modifies nothing - it only opens publicly available pages in a WebView. Those services are third-party and outside FreeView's control.</p>

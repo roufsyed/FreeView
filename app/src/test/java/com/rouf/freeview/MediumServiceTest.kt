@@ -1,6 +1,8 @@
 package com.rouf.freeview
 
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
 import org.junit.Test
 
 /**
@@ -71,5 +73,23 @@ class MediumServiceTest {
         assertEquals(MediumService.FREEDIUM, MediumService.fromId(null))
         assertEquals(MediumService.FREEDIUM, MediumService.fromId("nonexistent"))
         assertEquals(MediumService.FREEDIUM, MediumService.DEFAULT)
+    }
+
+    /**
+     * SECURITY INVARIANT: every service must wrap its input into a fixed https:// host, so a hostile
+     * scheme becomes an inert path/query value rather than something the WebView could execute. This
+     * is the real load-time boundary for every entry point (VIEW deep-link / Share / manual paste).
+     */
+    @Test
+    fun buildUrl_alwaysWrapsInFixedHttpsHost_neutralizingHostileSchemes() {
+        val hostile = "javascript:alert(document.cookie)"
+        for (service in MediumService.entries) {
+            val out = service.buildUrl(hostile)
+            assertTrue("${service.id} must start with https://", out.startsWith("https://"))
+            assertFalse(
+                "${service.id} must not begin with the hostile scheme",
+                out.startsWith("javascript:"),
+            )
+        }
     }
 }

@@ -14,7 +14,16 @@ enum class MediumService(
     ARCHIVE_IS("archive_is", "Archive.is", "https://archive.is/?url=%s&run=1", true),
     PROXY_API("proxy", "Medium-Parser", "https://medium-parser.vercel.app/?url=%s", true);
 
-    /** Builds the service URL for [mediumUrl], percent-encoding it when required. */
+    /**
+     * Builds the service URL for [mediumUrl], percent-encoding it when required.
+     *
+     * SECURITY INVARIANT: every [template] MUST be a fixed `https://` host with `%s` appearing only
+     * in the path or query — never in the authority/scheme. That makes [mediumUrl] an inert value, so
+     * even a hostile scheme (javascript:, file:, …) that slips past a caller becomes a harmless string
+     * segment the WebView cannot execute. This is the real load-time boundary for ALL entry points
+     * (VIEW deep-link, Share, manual paste); never add a template whose `%s` lands in the scheme/host.
+     * Locked by MediumServiceTest.
+     */
     fun buildUrl(mediumUrl: String): String {
         val value = if (encodeUrl) {
             // URLEncoder is pure-JVM (so buildUrl is unit-testable, unlike

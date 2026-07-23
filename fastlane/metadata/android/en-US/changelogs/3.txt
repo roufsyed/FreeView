@@ -1,0 +1,7 @@
+Bookmarks: save articles, browse them in a dedicated list, delete with long-press multi-select, and bookmark straight from your History.
+
+Open links directly: tap a Medium link anywhere - on medium.com or a custom publication domain - and choose FreeView (Settings has an "Open Medium links in FreeView" shortcut). FreeView is offered for web links in the system "Open with" chooser.
+
+Reading view: the link field is always available, a loading bar shows progress, and the toolbar adapts while you read.
+
+Privacy: cloud/device backup is disabled, so your data stays on your device.

@@ -29,6 +29,24 @@
                 <category android:name="android.intent.category.DEFAULT" />
                 <data android:mimeType="text/plain" />
             </intent-filter>
+
+            <!--
+              Deep-link: offer FreeView when ANY web link (http/https) is tapped, so Medium articles
+              on medium.com AND on custom publication domains (ai.plainenglish.io, towardsdatascience.com,
+              …) all open here — routed through the reader service exactly like a pasted link. No host
+              restriction (custom domains are unbounded); the scheme is gated in code (isAcceptableViewUri)
+              to http/https only, and MediumService.buildUrl is the execution boundary. Intentionally NO
+              android:autoVerify (we don't control these domains). Trade-off: this makes FreeView a
+              browser-type handler offered for all web links — pick it per-link from the chooser rather
+              than setting it as the default browser. Kept as its own filter so MAIN/LAUNCHER and SEND stay intact.
+            -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="http" />
+                <data android:scheme="https" />
+            </intent-filter>
         </activity>
 
         <activity
