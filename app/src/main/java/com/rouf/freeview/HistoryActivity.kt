@@ -9,6 +9,7 @@ import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.addCallback
@@ -37,10 +38,14 @@ class HistoryActivity : AppCompatActivity() {
     private var searchItem: MenuItem? = null
     private var clearItem: MenuItem? = null
 
+    /** Normalized keys of currently-bookmarked URLs, for the per-row bookmark indicator. */
+    private var bookmarkedKeys: Set<String> = emptySet()
+
     private val adapter = HistoryAdapter(
         onOpen = ::openArticle,
         onSelectionStarted = ::enterSelectionUi,
         onSelectionChanged = ::onSelectionChanged,
+        isBookmarked = { normalizeBookmarkUrl(it) in bookmarkedKeys },
     )
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -87,9 +92,11 @@ class HistoryActivity : AppCompatActivity() {
                 return true
             }
             override fun onMenuItemActionCollapse(item: MenuItem): Boolean {
-                clearItem?.isVisible = allItems.isNotEmpty()
                 query = ""
                 applyFilter()
+                // Rebuild the menu so "Clear all" returns inline and the bar re-lays-out cleanly;
+                // a direct isVisible flip can strand it in the overflow after a back-gesture collapse.
+                invalidateOptionsMenu()
                 return true
             }
         })
@@ -98,10 +105,12 @@ class HistoryActivity : AppCompatActivity() {
 
     override fun onPrepareOptionsMenu(menu: Menu): Boolean {
         val selecting = adapter.selectionMode
+        val searching = searchItem?.isActionViewExpanded == true
         menu.findItem(R.id.action_search)?.isVisible = !selecting && allItems.isNotEmpty()
         menu.findItem(R.id.action_bookmark_selected)?.isVisible = selecting
         menu.findItem(R.id.action_delete_selected)?.isVisible = selecting
-        menu.findItem(R.id.action_clear_history)?.isVisible = !selecting && allItems.isNotEmpty()
+        // Hide "Clear all" while searching (the SearchView takes over the bar), like the title.
+        menu.findItem(R.id.action_clear_history)?.isVisible = !selecting && !searching && allItems.isNotEmpty()
         return super.onPrepareOptionsMenu(menu)
     }
 
@@ -129,8 +138,20 @@ class HistoryActivity : AppCompatActivity() {
 
     private fun refresh() {
         allItems = store.items()
+        reloadBookmarkedKeys()
         applyFilter()
         invalidateOptionsMenu()
+    }
+
+    /** A bookmark may have been added/removed elsewhere; re-sync the per-row indicators. */
+    override fun onResume() {
+        super.onResume()
+        reloadBookmarkedKeys()
+        applyFilter()
+    }
+
+    private fun reloadBookmarkedKeys() {
+        bookmarkedKeys = bookmarks.items().mapTo(HashSet()) { normalizeBookmarkUrl(it) }
     }
 
     /** Narrows [allItems] by the current [query] (matching URL + derived title) and updates the UI. */
@@ -194,6 +215,7 @@ class HistoryActivity : AppCompatActivity() {
         val urls = adapter.selectedUrls()
         if (urls.isEmpty()) return
         bookmarks.addAll(urls)
+        reloadBookmarkedKeys()
         exitSelection()
         Toast.makeText(
             this,
@@ -237,6 +259,7 @@ class HistoryActivity : AppCompatActivity() {
         private val onOpen: (String) -> Unit,
         private val onSelectionStarted: () -> Unit,
         private val onSelectionChanged: () -> Unit,
+        private val isBookmarked: (String) -> Boolean,
     ) : RecyclerView.Adapter<HistoryAdapter.VH>() {
 
         private val items = mutableListOf<String>()
@@ -290,6 +313,7 @@ class HistoryActivity : AppCompatActivity() {
             val url = items[position]
             holder.title.text = deriveArticleTitle(url)
             holder.url.text = url
+            holder.bookmark.isVisible = isBookmarked(url)
             holder.setSelected(selected.contains(url))
             holder.itemView.setOnClickListener {
                 if (selectionMode) toggle(url) else onOpen(url)
@@ -305,6 +329,7 @@ class HistoryActivity : AppCompatActivity() {
         class VH(view: View) : RecyclerView.ViewHolder(view) {
             val title: TextView = view.findViewById(R.id.item_title)
             val url: TextView = view.findViewById(R.id.item_url)
+            val bookmark: ImageView = view.findViewById(R.id.item_bookmark)
 
             fun setSelected(isSelected: Boolean) {
                 if (isSelected) {

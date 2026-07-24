@@ -15,6 +15,7 @@ import android.view.MenuItem
 import android.view.MotionEvent
 import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputMethodManager
+import android.webkit.WebResourceError
 import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
 import android.webkit.WebSettings
@@ -555,11 +556,17 @@ class MainActivity : AppCompatActivity() {
 
         override fun onReceivedError(
             view: WebView?,
-            errorCode: Int,
-            description: String?,
-            failingUrl: String?
+            request: WebResourceRequest?,
+            error: WebResourceError?
         ) {
-            super.onReceivedError(view, errorCode, description, failingUrl)
+            super.onReceivedError(view, request, error)
+            // Only the main document may replace the page with an error; ignore subresource failures
+            // (images, etc.). The deprecated 4-arg callback this replaces was main-frame only, so the
+            // isForMainFrame guard preserves that behavior.
+            if (request?.isForMainFrame != true) return
+            val errorCode = error?.errorCode ?: return
+            val description = error.description?.toString()
+            val failingUrl = request.url?.toString()
             Log.e(TAG, "WebView error: $description (Code: $errorCode) for URL: $failingUrl")
             loadErrored = true
 

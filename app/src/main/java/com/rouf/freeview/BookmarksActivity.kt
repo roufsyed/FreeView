@@ -86,9 +86,11 @@ class BookmarksActivity : AppCompatActivity() {
                 return true
             }
             override fun onMenuItemActionCollapse(item: MenuItem): Boolean {
-                clearItem?.isVisible = allItems.isNotEmpty()
                 query = ""
                 applyFilter()
+                // Rebuild the menu so "Clear all" returns inline and the bar re-lays-out cleanly;
+                // a direct isVisible flip can strand it in the overflow after a back-gesture collapse.
+                invalidateOptionsMenu()
                 return true
             }
         })
@@ -97,9 +99,11 @@ class BookmarksActivity : AppCompatActivity() {
 
     override fun onPrepareOptionsMenu(menu: Menu): Boolean {
         val selecting = adapter.selectionMode
+        val searching = searchItem?.isActionViewExpanded == true
         menu.findItem(R.id.action_search)?.isVisible = !selecting && allItems.isNotEmpty()
         menu.findItem(R.id.action_delete_selected)?.isVisible = selecting
-        menu.findItem(R.id.action_clear_bookmarks)?.isVisible = !selecting && allItems.isNotEmpty()
+        // Hide "Clear all" while searching (the SearchView takes over the bar), like the title.
+        menu.findItem(R.id.action_clear_bookmarks)?.isVisible = !selecting && !searching && allItems.isNotEmpty()
         return super.onPrepareOptionsMenu(menu)
     }
 
