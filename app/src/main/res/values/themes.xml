@@ -11,4 +11,10 @@
     </style>
 
     <style name="Theme.Freediumcfd" parent="Base.Theme.Freediumcfd" />
+
+    <style name="Theme.Freediumcfd.Splash" parent="Theme.Freediumcfd">
+        <item name="android:windowBackground">@color/brand_blue</item>
+        <item name="android:windowSplashScreenBackground" tools:targetApi="31">@color/brand_blue</item>
+        <item name="android:windowSplashScreenIconBackgroundColor" tools:targetApi="31">@color/brand_blue</item>
+    </style>
 </resources>

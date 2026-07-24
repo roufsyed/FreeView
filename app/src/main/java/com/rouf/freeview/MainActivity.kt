@@ -61,6 +61,8 @@ class MainActivity : AppCompatActivity() {
 
     @RequiresPermission(Manifest.permission.ACCESS_NETWORK_STATE)
     override fun onCreate(savedInstanceState: Bundle?) {
+        // Swap the brand-colored launch/splash theme for the real app theme before the window is built.
+        setTheme(R.style.Theme_Freediumcfd)
         super.onCreate(savedInstanceState)
         Log.d(TAG, "onCreate started")
 

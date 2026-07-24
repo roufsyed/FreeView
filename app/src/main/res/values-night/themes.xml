@@ -6,4 +6,9 @@
         <!-- Required by PreferenceFragmentCompat in SettingsActivity. -->
         <item name="preferenceTheme">@style/PreferenceThemeOverlay</item>
     </style>
+
+    <style name="Theme.Freediumcfd.Splash" parent="Theme.Freediumcfd">
+        <item name="android:windowBackground">@color/splash_dark</item>
+        <item name="android:windowSplashScreenBackground" tools:targetApi="31">@color/splash_dark</item>
+    </style>
 </resources>
