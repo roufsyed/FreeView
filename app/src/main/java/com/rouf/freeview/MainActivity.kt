@@ -2,6 +2,7 @@ package com.rouf.freeview
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.content.ClipboardManager
 import android.content.Intent
 import android.graphics.Color
 import android.net.ConnectivityManager
@@ -51,6 +52,12 @@ class MainActivity : AppCompatActivity() {
     /** True while the current navigation hit onReceivedError; blocks a premature ARTICLE promotion. */
     private var loadErrored = false
 
+    /** Set when leaving for an in-app screen, so the next resume skips offering the clipboard. */
+    private var skipClipboardCheck = false
+
+    /** Set on a real resume; the deferred clipboard offer runs once the window regains focus. */
+    private var pendingClipboardCheck = false
+
     @RequiresPermission(Manifest.permission.ACCESS_NETWORK_STATE)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -73,6 +80,7 @@ class MainActivity : AppCompatActivity() {
 
         binding.webView.configureWebViewSettings()
         setupUrlInput()
+        setupClipboardBanner()
 
         if (savedInstanceState == null) {
             Log.d(TAG, "Fresh start; handling launch intent")
@@ -92,6 +100,7 @@ class MainActivity : AppCompatActivity() {
         } else {
             showWelcomePage()
         }
+        renderClipboardBanner() // restore the banner after a configuration change
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -128,14 +137,17 @@ class MainActivity : AppCompatActivity() {
                 true
             }
             R.id.action_history -> {
+                skipClipboardCheck = true
                 startActivity(Intent(this, HistoryActivity::class.java))
                 true
             }
             R.id.action_bookmarks -> {
+                skipClipboardCheck = true
                 startActivity(Intent(this, BookmarksActivity::class.java))
                 true
             }
             R.id.action_settings -> {
+                skipClipboardCheck = true
                 startActivity(Intent(this, SettingsActivity::class.java))
                 true
             }
@@ -165,6 +177,10 @@ class MainActivity : AppCompatActivity() {
         super.onResume()
         // Reflect settings that may have changed while in the Settings screen.
         binding.webView.settings.textZoom = prefs.textZoom
+        // Reading the clipboard needs window focus (Android 10+), so the offer runs in
+        // onWindowFocusChanged. Skip it when returning from one of our own screens.
+        pendingClipboardCheck = !skipClipboardCheck
+        skipClipboardCheck = false
         val url = viewModel.currentMediumUrl ?: return
         // A bookmark may have been added/removed on the Bookmarks/Settings screen; re-sync the star.
         viewModel.isCurrentBookmarked = bookmarks.contains(url)
@@ -177,6 +193,14 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    override fun onWindowFocusChanged(hasFocus: Boolean) {
+        super.onWindowFocusChanged(hasFocus)
+        // Clipboard reads require focus, so the offer deferred from onResume runs here, once.
+        if (hasFocus && pendingClipboardCheck) {
+            pendingClipboardCheck = false
+            maybeOfferClipboard()
+        }
+    }
 
     @RequiresPermission(Manifest.permission.ACCESS_NETWORK_STATE)
     override fun onNewIntent(intent: Intent) {
@@ -221,6 +245,67 @@ class MainActivity : AppCompatActivity() {
         binding.urlInput.setText(mediumUrl)
         setupWebView(serviceUrl)
     }
+
+    // --- Clipboard offer: on resume, surface a Medium link sitting in the clipboard ---
+
+    @RequiresPermission(Manifest.permission.ACCESS_NETWORK_STATE)
+    private fun setupClipboardBanner() {
+        binding.clipboardBannerOpen.setOnClickListener {
+            val url = viewModel.clipboardOfferUrl ?: return@setOnClickListener
+            dismissClipboardOffer(url)
+            openWithSelectedService(url)
+        }
+        binding.clipboardBannerDismiss.setOnClickListener {
+            dismissClipboardOffer(viewModel.clipboardOfferUrl)
+        }
+    }
+
+    /** Marks [url] as handled (so it isn't offered again) and hides the banner. */
+    private fun dismissClipboardOffer(url: String?) {
+        viewModel.dismissedClipboardUrl = url
+        viewModel.clipboardOfferUrl = null
+        binding.clipboardBanner.isVisible = false
+    }
+
+    /**
+     * Offers a URL from the clipboard (a Medium link if present, else any http(s) URL) — unless it is
+     * already the open article or one the user already opened/dismissed. Called once per resume from
+     * onWindowFocusChanged. State lives in the ViewModel, so the banner survives rotation.
+     */
+    private fun maybeOfferClipboard() {
+        val candidate = clipboardUrl()
+        if (candidate != null &&
+            !isSameArticle(candidate, viewModel.currentMediumUrl) &&
+            !isSameArticle(candidate, viewModel.dismissedClipboardUrl)
+        ) {
+            viewModel.clipboardOfferUrl = candidate
+        }
+        renderClipboardBanner()
+    }
+
+    private fun renderClipboardBanner() {
+        binding.clipboardBanner.isVisible = viewModel.clipboardOfferUrl != null
+    }
+
+    private fun isSameArticle(a: String?, b: String?): Boolean =
+        a != null && b != null && normalizeBookmarkUrl(a) == normalizeBookmarkUrl(b)
+
+    /** A URL from the clipboard to offer — a Medium link if present, else any http(s) URL — or null. */
+    private fun clipboardUrl(): String? {
+        val clipboard = getSystemService(CLIPBOARD_SERVICE) as? ClipboardManager ?: return null
+        if (!clipboard.hasPrimaryClip()) return null
+        val clip = clipboard.primaryClip ?: return null
+        if (clip.itemCount == 0) return null
+        val text = clip.getItemAt(0).coerceToText(this)?.toString().orEmpty()
+        if (text.isBlank()) return null
+        return extractMediumUrlFromText(text)
+    }
+
+    /** True if [url]'s host is medium.com or a *.medium.com subdomain. */
+    private fun isMediumHostUrl(url: String): Boolean = runCatching {
+        val host = url.toUri().host ?: return@runCatching false
+        host.equals(MEDIUM_HOST, ignoreCase = true) || host.endsWith(".$MEDIUM_HOST", ignoreCase = true)
+    }.getOrDefault(false)
 
     private fun setupUrlInput() {
         binding.urlInputLayout.setEndIconOnClickListener { submitUrl() }
@@ -320,22 +405,10 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun extractMediumUrlFromText(text: String): String? {
-        val regex = Regex(URL_REGEX)
-        val urls = regex.findAll(text).map { it.value }.toList()
+        val urls = Regex(URL_REGEX).findAll(text).map { it.value }.toList()
         if (urls.isEmpty()) return null
-
-        // Prefer a medium-host if present (medium.com or *.medium.com), otherwise fallback to first URL found
-        val preferred = urls.firstOrNull { url ->
-            try {
-                val host = url.toUri().host ?: return@firstOrNull false
-                host.equals(MEDIUM_HOST, ignoreCase = true) ||
-                        host.endsWith(".${MEDIUM_HOST}", ignoreCase = true)
-            } catch (_: Exception) {
-                false
-            }
-        }
-
-        return preferred ?: urls.first()
+        // Prefer a Medium host if present (medium.com or *.medium.com), otherwise the first URL found.
+        return urls.firstOrNull { isMediumHostUrl(it) } ?: urls.first()
     }
 
     @RequiresPermission(Manifest.permission.ACCESS_NETWORK_STATE)

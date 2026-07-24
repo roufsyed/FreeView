@@ -18,4 +18,10 @@ class MainViewModel : ViewModel() {
 
     /** Cached "current article is bookmarked" flag, so the menu never re-parses the store. */
     var isCurrentBookmarked: Boolean = false
+
+    /** Medium URL from the clipboard currently offered by the banner (null = banner hidden). */
+    var clipboardOfferUrl: String? = null
+
+    /** Last clipboard URL the user opened or dismissed, so it isn't offered again. */
+    var dismissedClipboardUrl: String? = null
 }

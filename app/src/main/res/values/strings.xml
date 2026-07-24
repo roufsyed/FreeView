@@ -89,4 +89,9 @@
     <string name="pref_view_bookmarks_title">View bookmarks</string>
     <string name="pref_clear_bookmarks_title">Clear bookmarks</string>
     <string name="pref_clear_bookmarks_done">Bookmarks cleared</string>
+
+    <!-- Clipboard offer banner -->
+    <string name="clipboard_banner">Open copied link?</string>
+    <string name="action_open">Open</string>
+    <string name="clipboard_dismiss">Dismiss</string>
 </resources>
