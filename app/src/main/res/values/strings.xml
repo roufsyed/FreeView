@@ -94,4 +94,50 @@
     <string name="clipboard_banner">Open copied link?</string>
     <string name="action_open">Open</string>
     <string name="clipboard_dismiss">Dismiss</string>
+
+    <!-- FAQ -->
+    <string name="faq_title">FAQ</string>
+    <string name="faq_pref_summary">Common questions and answers</string>
+
+    <string name="faq_q_about">What is FreeView?</string>
+    <string name="faq_a_about">FreeView is a free, open-source app that opens web articles - including Medium links - through independent reader services that you choose. Think of it as a focused browser: you give it a link by pasting, sharing, or tapping, and it loads that page through the reader service selected in Settings.\n\nFreeView does not host, copy, store, or change any article content. It simply displays third-party web pages, like any browser.</string>
+
+    <string name="faq_q_affiliation">Is FreeView affiliated with Medium?</string>
+    <string name="faq_a_affiliation">No. FreeView is an independent, community project. It is not affiliated with, endorsed by, or connected to Medium (Medium is a trademark of A Medium Corporation) or to any reader service it can open - Freedium, ReadMedium, Archive.today and others, each an independent third party.\n\nThe Medium name is used only to describe the kind of links FreeView opens. FreeView does not operate those services or control the content they return.</string>
+
+    <string name="faq_q_open">How do I open an article?</string>
+    <string name="faq_a_open">Three ways:\n\n•  Paste - copy the article link, open FreeView, and paste it into the box on the home screen (or tap the Open copied link banner if it appears).\n•  Share - in any app, tap Share and choose FreeView.\n•  Tap - tap a link anywhere and pick FreeView.</string>
+
+    <string name="faq_q_share">How do I share an article into FreeView?</string>
+    <string name="faq_a_share">Wherever you see the link - a browser, X, WhatsApp, the Medium app - tap Share and choose FreeView from the share sheet. It opens the link through your selected reading service. If FreeView is not listed, scroll or tap More.</string>
+
+    <string name="faq_q_domains">Does it work with non-Medium publications?</string>
+    <string name="faq_a_domains">Yes. Many Medium publications use their own domains (for example ai.plainenglish.io or towardsdatascience.com), and FreeView opens those just like medium.com links. It can open essentially any web link you give it, through your chosen reading service.</string>
+
+    <string name="faq_q_service">What is a reading service, and which should I pick?</string>
+    <string name="faq_a_service">A reading service is an independent website that takes an article\'s URL and shows it in a clean, readable layout. FreeView does not do that rendering itself - it opens the page through whichever service you pick in Settings, under Reading service.\n\nFreedium is a fine default. If a page does not load well, switch to another - they are run by different people and behave differently.</string>
+
+    <string name="faq_q_wontload">An article will not load. What should I try?</string>
+    <string name="faq_a_wontload">Reader services are run by independent third parties and can occasionally be down or unable to render a page. Try, in order:\n\n1.  Open Settings, pick a different Reading service, then reopen the article.\n2.  Check your internet connection.\n3.  Try again later - the service may be temporarily unavailable.\n\nFreeView cannot fix a service that is offline, but switching services usually helps.</string>
+
+    <string name="faq_q_bookmark">How do I bookmark an article?</string>
+    <string name="faq_a_bookmark">While reading, tap the star icon in the top bar to save it, and tap it again to remove. Open the Bookmarks icon on the home screen to browse, search, or delete saved articles. Bookmarks are stored only on your device.</string>
+
+    <string name="faq_q_default">How do I open links in FreeView by default?</string>
+    <string name="faq_a_default">Go to Settings and tap Open Medium links in FreeView. On Android 12 and later this opens the system Open by default screen for FreeView, where you can enable or add the link types you want it to handle. After that, tapping a supported link can open straight in FreeView.</string>
+
+    <string name="faq_q_wrongapp">I tapped a link but it opened somewhere else. Why?</string>
+    <string name="faq_a_wrongapp">Android decides which app handles a link, and a few things can override FreeView:\n\n•  The Medium app, if installed, may be a verified handler for medium.com. Turn it off in Android Settings, under Apps, Medium, Open by default.\n•  Some apps (such as WhatsApp) open links in their own in-app browser. Look for an open externally option.\n•  FreeView may not be enabled for links yet.\n\nFreeView cannot force itself ahead of an app the system has already verified for a domain.</string>
+
+    <string name="faq_q_data">Does FreeView collect my data?</string>
+    <string name="faq_a_data">No. FreeView has no analytics, ads, tracking, or telemetry, and the developer never receives or stores any of your data. Your history and bookmarks stay on your device.\n\nIt requests only two permissions - Internet and network state - needed to load pages. Full details are in the Privacy Policy.</string>
+
+    <string name="faq_q_account">Do I need an account or login?</string>
+    <string name="faq_a_account">No. FreeView has no accounts and no sign-in. You never give it an email, password, or any personal detail - just open a link and read.</string>
+
+    <string name="faq_q_clipboard">Why did I see a pasted from clipboard notice?</string>
+    <string name="faq_a_clipboard">When you open FreeView it checks whether you just copied a link, so it can offer to open it in one tap. That check is what triggers Android\'s pasted from clipboard notice - the system telling you an app looked at the clipboard, which is expected here.\n\nFreeView only looks for a web link, uses it solely to show the Open copied link banner, and never stores or sends your clipboard anywhere. If there is no link, nothing happens.</string>
+
+    <string name="faq_q_disclaimer">Disclaimer</string>
+    <string name="faq_a_disclaimer">FreeView is an independent, open-source tool that works like a browser: it opens web pages through third-party reader services you select. It does not host, copy, store, cache, or modify any article content, and it is not affiliated with or endorsed by Medium (a trademark of A Medium Corporation) or any reader service.\n\nYou are responsible for using FreeView in accordance with the terms of the websites you access and the laws of your region. The app is provided as is, without warranty of any kind (MIT License).</string>
 </resources>

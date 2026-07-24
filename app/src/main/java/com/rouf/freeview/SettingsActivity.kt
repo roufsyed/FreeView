@@ -92,6 +92,13 @@ class SettingsActivity : AppCompatActivity() {
                     true
                 }
 
+            // Open the FAQ screen.
+            findPreference<Preference>(AppPreferences.KEY_FAQ)
+                ?.setOnPreferenceClickListener {
+                    startActivity(Intent(requireContext(), FaqActivity::class.java))
+                    true
+                }
+
             // Open the history screen.
             findPreference<Preference>(AppPreferences.KEY_VIEW_HISTORY)
                 ?.setOnPreferenceClickListener {
@@ -118,7 +125,7 @@ class SettingsActivity : AppCompatActivity() {
                     true
                 }
 
-            // Clear stored bookmarks — deliberate saves, so confirm first.
+            // Clear stored bookmarks - deliberate saves, so confirm first.
             findPreference<Preference>(AppPreferences.KEY_CLEAR_BOOKMARKS)
                 ?.setOnPreferenceClickListener {
                     MaterialAlertDialogBuilder(requireContext())

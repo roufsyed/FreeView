@@ -35,6 +35,7 @@ class AppPreferences(context: Context) {
         const val KEY_OPEN_DEFAULT = "open_default"
         const val KEY_CLEAR_CACHE = "clear_cache"
         const val KEY_ABOUT = "about_version"
+        const val KEY_FAQ = "faq"
 
         const val THEME_SYSTEM = "system"
         const val THEME_LIGHT = "light"

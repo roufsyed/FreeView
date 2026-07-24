@@ -73,6 +73,11 @@
     <PreferenceCategory app:title="@string/pref_category_about">
 
         <Preference
+            app:key="faq"
+            app:summary="@string/faq_pref_summary"
+            app:title="@string/faq_title" />
+
+        <Preference
             app:key="clear_cache"
             app:summary="@string/pref_clear_cache_summary"
             app:title="@string/pref_clear_cache_title" />

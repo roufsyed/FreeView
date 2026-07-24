@@ -107,7 +107,7 @@ class UrlTextTest {
 
     @Test
     fun derive_upperCasesFirstCharLocaleIndependently() {
-        // Locks the use of Char.uppercase() (not String.uppercase(Locale)) — the Turkish-i trap.
+        // Locks the use of Char.uppercase() (not String.uppercase(Locale)) - the Turkish-i trap.
         assertTrue(deriveArticleTitle("https://medium.com/@u/install-the-app-abc").startsWith("I"))
     }
 

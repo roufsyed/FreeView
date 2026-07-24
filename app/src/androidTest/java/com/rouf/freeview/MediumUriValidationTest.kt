@@ -11,7 +11,7 @@ import org.junit.runner.RunWith
  * Instrumentation tests for the deep-link URI gate. Uses the REAL android.net.Uri.
  *
  * FreeView opens links from any host (Medium lives on medium.com and countless custom publication
- * domains), so the gate is scheme + length only — no host restriction — while still rejecting
+ * domains), so the gate is scheme + length only - no host restriction - while still rejecting
  * dangerous non-http(s) schemes.
  */
 @RunWith(AndroidJUnit4::class)

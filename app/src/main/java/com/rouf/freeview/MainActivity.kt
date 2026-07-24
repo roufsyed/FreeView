@@ -268,7 +268,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     /**
-     * Offers a URL from the clipboard (a Medium link if present, else any http(s) URL) — unless it is
+     * Offers a URL from the clipboard (a Medium link if present, else any http(s) URL) - unless it is
      * already the open article or one the user already opened/dismissed. Called once per resume from
      * onWindowFocusChanged. State lives in the ViewModel, so the banner survives rotation.
      */
@@ -290,7 +290,7 @@ class MainActivity : AppCompatActivity() {
     private fun isSameArticle(a: String?, b: String?): Boolean =
         a != null && b != null && normalizeBookmarkUrl(a) == normalizeBookmarkUrl(b)
 
-    /** A URL from the clipboard to offer — a Medium link if present, else any http(s) URL — or null. */
+    /** A URL from the clipboard to offer - a Medium link if present, else any http(s) URL - or null. */
     private fun clipboardUrl(): String? {
         val clipboard = getSystemService(CLIPBOARD_SERVICE) as? ClipboardManager ?: return null
         if (!clipboard.hasPrimaryClip()) return null
@@ -447,8 +447,8 @@ class MainActivity : AppCompatActivity() {
             textZoom = prefs.textZoom
             cacheMode = WebSettings.LOAD_DEFAULT
             mixedContentMode = WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
-            // Only remote https service URLs (and inlined welcome/error HTML) are ever loaded —
-            // no file:// or content:// loads — so deny both to remove a local-read/exfiltration primitive.
+            // Only remote https service URLs (and inlined welcome/error HTML) are ever loaded -
+            // no file:// or content:// loads - so deny both to remove a local-read/exfiltration primitive.
             allowFileAccess = false
             allowContentAccess = false
             setGeolocationEnabled(false)
@@ -544,7 +544,7 @@ class MainActivity : AppCompatActivity() {
         override fun onPageFinished(view: WebView?, url: String?) {
             super.onPageFinished(view, url)
             Log.d(TAG, "Page loaded successfully: $url")
-            // Promote to ARTICLE only for a clean article load — never welcome/error pages, and
+            // Promote to ARTICLE only for a clean article load - never welcome/error pages, and
             // never a load that errored (the cache-miss reload promotes on its successful finish).
             if (viewModel.pageState == MainViewModel.PageState.LOADING && !loadErrored) {
                 viewModel.pageState = MainViewModel.PageState.ARTICLE

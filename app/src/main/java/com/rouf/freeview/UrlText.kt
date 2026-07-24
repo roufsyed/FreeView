@@ -4,8 +4,8 @@ package com.rouf.freeview
  * Pure-JVM URL helpers shared by the history and bookmark lists/stores.
  *
  * These use only string operations (never android.net.Uri or java.net.URI, which throw on
- * malformed input and aren't available in plain JVM unit tests). Every function is total —
- * it returns a sensible fallback rather than throwing — so it is safe to call from the main
+ * malformed input and aren't available in plain JVM unit tests). Every function is total -
+ * it returns a sensible fallback rather than throwing - so it is safe to call from the main
  * article screen and is directly unit-testable (see UrlTextTest).
  */
 
@@ -21,7 +21,7 @@ fun deriveArticleTitle(url: String): String {
 /**
  * True when [url] should appear for the list search [query]: a blank query matches everything;
  * otherwise the query (case-insensitive) must be a substring of the URL or of its derived title.
- * Needs no stored title — both sides are computed from the URL.
+ * Needs no stored title - both sides are computed from the URL.
  */
 fun matchesQuery(url: String, query: String): Boolean {
     if (query.isBlank()) return true

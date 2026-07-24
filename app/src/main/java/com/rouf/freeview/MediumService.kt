@@ -18,7 +18,7 @@ enum class MediumService(
      * Builds the service URL for [mediumUrl], percent-encoding it when required.
      *
      * SECURITY INVARIANT: every [template] MUST be a fixed `https://` host with `%s` appearing only
-     * in the path or query — never in the authority/scheme. That makes [mediumUrl] an inert value, so
+     * in the path or query - never in the authority/scheme. That makes [mediumUrl] an inert value, so
      * even a hostile scheme (javascript:, file:, …) that slips past a caller becomes a harmless string
      * segment the WebView cannot execute. This is the real load-time boundary for ALL entry points
      * (VIEW deep-link, Share, manual paste); never add a template whose `%s` lands in the scheme/host.

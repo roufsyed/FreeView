@@ -17,8 +17,8 @@ fun isHttpUrl(uri: Uri): Boolean = when (uri.scheme?.lowercase()) {
 /**
  * Gate for an inbound VIEW / deep-link [uri].
  *
- * FreeView opens links from ANY host — Medium articles live on medium.com but also on many custom
- * publication domains (ai.plainenglish.io, towardsdatascience.com, …) that can't be enumerated — so,
+ * FreeView opens links from ANY host - Medium articles live on medium.com but also on many custom
+ * publication domains (ai.plainenglish.io, towardsdatascience.com, …) that can't be enumerated - so,
  * exactly like a pasted link, there is NO host restriction. The gate is purely a scheme + length check:
  * the scheme MUST be http/https (rejecting javascript:/file:/content:/intent:/data:) and the URL must be
  * within [MAX_URL_LENGTH]. This matters because MainActivity is exported: an explicit component intent
