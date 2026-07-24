@@ -1,6 +1,7 @@
 package com.rouf.freeview
 
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -108,5 +109,32 @@ class UrlTextTest {
     fun derive_upperCasesFirstCharLocaleIndependently() {
         // Locks the use of Char.uppercase() (not String.uppercase(Locale)) — the Turkish-i trap.
         assertTrue(deriveArticleTitle("https://medium.com/@u/install-the-app-abc").startsWith("I"))
+    }
+
+    // --- matchesQuery (list search) ---
+
+    @Test
+    fun matchesQuery_blankMatchesEverything() {
+        assertTrue(matchesQuery("https://medium.com/@u/anything-abc123", ""))
+        assertTrue(matchesQuery("https://medium.com/@u/anything-abc123", "   "))
+    }
+
+    @Test
+    fun matchesQuery_matchesDerivedTitleWords() {
+        val url = "https://ai.plainenglish.io/uber-architecture-part-1-why-tracking-drivers-abc123"
+        assertTrue(matchesQuery(url, "uber architecture")) // derived title uses spaces
+        assertTrue(matchesQuery(url, "TRACKING"))          // case-insensitive
+    }
+
+    @Test
+    fun matchesQuery_matchesUrlSubstring() {
+        val url = "https://ai.plainenglish.io/uber-architecture-abc123"
+        assertTrue(matchesQuery(url, "plainenglish"))      // host, not in the derived title
+        assertTrue(matchesQuery(url, "uber-architecture")) // hyphenated slug, in the URL
+    }
+
+    @Test
+    fun matchesQuery_nonMatchIsFalse() {
+        assertFalse(matchesQuery("https://medium.com/@u/cooking-recipes-abc123", "kubernetes"))
     }
 }

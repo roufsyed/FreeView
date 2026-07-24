@@ -13,6 +13,7 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.addCallback
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.SearchView
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isVisible
@@ -27,7 +28,13 @@ class BookmarksActivity : AppCompatActivity() {
 
     private lateinit var store: BookmarkStore
     private lateinit var listView: RecyclerView
-    private lateinit var emptyView: View
+    private lateinit var emptyView: TextView
+
+    /** Full list from the store; [applyFilter] narrows it to what the adapter shows. */
+    private var allItems: List<String> = emptyList()
+    private var query: String = ""
+    private var searchItem: MenuItem? = null
+    private var clearItem: MenuItem? = null
 
     private val adapter = BookmarkAdapter(
         onOpen = ::openArticle,
@@ -60,13 +67,39 @@ class BookmarksActivity : AppCompatActivity() {
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         menuInflater.inflate(R.menu.bookmarks_menu, menu)
+        searchItem = menu.findItem(R.id.action_search)
+        clearItem = menu.findItem(R.id.action_clear_bookmarks)
+        (searchItem?.actionView as? SearchView)?.apply {
+            queryHint = getString(R.string.search_hint)
+            setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+                override fun onQueryTextSubmit(text: String?): Boolean = false
+                override fun onQueryTextChange(text: String?): Boolean {
+                    this@BookmarksActivity.query = text.orEmpty()
+                    applyFilter()
+                    return true
+                }
+            })
+        }
+        searchItem?.setOnActionExpandListener(object : MenuItem.OnActionExpandListener {
+            override fun onMenuItemActionExpand(item: MenuItem): Boolean {
+                clearItem?.isVisible = false // hide "Clear all" while the search field is open
+                return true
+            }
+            override fun onMenuItemActionCollapse(item: MenuItem): Boolean {
+                clearItem?.isVisible = allItems.isNotEmpty()
+                query = ""
+                applyFilter()
+                return true
+            }
+        })
         return true
     }
 
     override fun onPrepareOptionsMenu(menu: Menu): Boolean {
         val selecting = adapter.selectionMode
+        menu.findItem(R.id.action_search)?.isVisible = !selecting && allItems.isNotEmpty()
         menu.findItem(R.id.action_delete_selected)?.isVisible = selecting
-        menu.findItem(R.id.action_clear_bookmarks)?.isVisible = !selecting && adapter.itemCount > 0
+        menu.findItem(R.id.action_clear_bookmarks)?.isVisible = !selecting && allItems.isNotEmpty()
         return super.onPrepareOptionsMenu(menu)
     }
 
@@ -89,16 +122,28 @@ class BookmarksActivity : AppCompatActivity() {
     }
 
     private fun refresh() {
-        val items = store.items()
-        adapter.submit(items)
-        emptyView.isVisible = items.isEmpty()
-        listView.isVisible = items.isNotEmpty()
+        allItems = store.items()
+        applyFilter()
         invalidateOptionsMenu()
+    }
+
+    /** Narrows [allItems] by the current [query] (matching URL + derived title) and updates the UI. */
+    private fun applyFilter() {
+        // No invalidateOptionsMenu() here: it re-prepares the menu on every keystroke, which
+        // collapses the expanded SearchView and closes the keyboard. Menu visibility depends only
+        // on allItems (set in refresh()), not on the filtered results.
+        val filtered = allItems.filter { matchesQuery(it, query) }
+        adapter.submit(filtered)
+        val empty = filtered.isEmpty()
+        emptyView.setText(if (query.isBlank()) R.string.bookmarks_empty else R.string.search_empty)
+        emptyView.isVisible = empty
+        listView.isVisible = !empty
     }
 
     // --- Selection mode (contextual bar reusing the app's toolbar) ---
 
     private fun enterSelectionUi() {
+        searchItem?.collapseActionView() // drop the filter so selection acts on the full list
         supportActionBar?.setHomeAsUpIndicator(R.drawable.ic_close_24)
         updateSelectionTitle()
         invalidateOptionsMenu()

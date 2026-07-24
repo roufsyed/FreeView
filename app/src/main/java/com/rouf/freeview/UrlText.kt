@@ -19,6 +19,17 @@ fun deriveArticleTitle(url: String): String {
 }
 
 /**
+ * True when [url] should appear for the list search [query]: a blank query matches everything;
+ * otherwise the query (case-insensitive) must be a substring of the URL or of its derived title.
+ * Needs no stored title — both sides are computed from the URL.
+ */
+fun matchesQuery(url: String, query: String): Boolean {
+    if (query.isBlank()) return true
+    return url.contains(query, ignoreCase = true) ||
+        deriveArticleTitle(url).contains(query, ignoreCase = true)
+}
+
+/**
  * A canonical key for de-duplicating bookmarks: folds the scheme to https, lowercases the
  * host, and drops the query and fragment (a Medium article's identity is its path, while the
  * query is tracking noise like ?source=/?sk=). The original URL is what gets stored; this is

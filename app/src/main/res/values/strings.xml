@@ -36,6 +36,11 @@
     <string name="history_clear">Clear all</string>
     <string name="history_clear_confirm">Clear all history?</string>
     <string name="history_empty">No history yet</string>
+
+    <!-- Search (history + bookmarks lists) -->
+    <string name="search_title">Search</string>
+    <string name="search_hint">Search articles</string>
+    <string name="search_empty">No matching articles</string>
     <string name="pref_category_history">History</string>
     <string name="pref_history_size_title">History size</string>
     <string name="pref_view_history_title">View history</string>
