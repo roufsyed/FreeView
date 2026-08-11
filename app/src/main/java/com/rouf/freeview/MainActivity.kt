@@ -3,6 +3,7 @@ package com.rouf.freeview
 import android.Manifest
 import android.annotation.SuppressLint
 import android.content.ClipboardManager
+import android.content.ComponentName
 import android.content.Intent
 import android.graphics.Color
 import android.net.ConnectivityManager
@@ -535,7 +536,36 @@ class MainActivity : AppCompatActivity() {
                 networkCapabilities.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET)
     }
 
+    /**
+     * Opens [url] in an external browser, excluding FreeView itself so a link tapped inside the reader
+     * doesn't just re-enter the app (FreeView is a registered http/https VIEW handler).
+     */
+    private fun openExternally(url: String) {
+        val viewIntent = Intent(Intent.ACTION_VIEW, url.toUri())
+        val chooser = Intent.createChooser(viewIntent, getString(R.string.open_in_browser)).apply {
+            putExtra(
+                Intent.EXTRA_EXCLUDE_COMPONENTS,
+                arrayOf(ComponentName(this@MainActivity, MainActivity::class.java)),
+            )
+        }
+        if (runCatching { startActivity(chooser) }.isFailure) {
+            Log.w(TAG, "No external app to open link: $url")
+        }
+    }
+
     private inner class CustomWebViewClient : WebViewClient() {
+
+        override fun shouldOverrideUrlLoading(view: WebView?, request: WebResourceRequest?): Boolean {
+            request ?: return false
+            val target = request.url?.toString() ?: return false
+            // A genuine tap that leaves the reader page (e.g. Freedium's "open original" → medium.com)
+            // opens in a browser; same-site links, redirects and JS-driven loads stay in the WebView.
+            if (request.hasGesture() && leavesReaderDomain(view?.url, target)) {
+                openExternally(target)
+                return true
+            }
+            return false
+        }
 
         override fun onPageStarted(view: WebView?, url: String?, favicon: android.graphics.Bitmap?) {
             super.onPageStarted(view, url, favicon)

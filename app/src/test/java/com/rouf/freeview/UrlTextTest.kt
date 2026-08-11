@@ -137,4 +137,41 @@ class UrlTextTest {
     fun matchesQuery_nonMatchIsFalse() {
         assertFalse(matchesQuery("https://medium.com/@u/cooking-recipes-abc123", "kubernetes"))
     }
+
+    // --- leavesReaderDomain (open reader-leaving links in a browser) ---
+
+    @Test
+    fun leavesReader_sameHostStaysInApp() {
+        assertFalse(leavesReaderDomain("https://freedium-mirror.cfd/x", "https://freedium-mirror.cfd/y"))
+    }
+
+    @Test
+    fun leavesReader_subdomainStaysInApp() {
+        assertFalse(leavesReaderDomain("https://freedium-mirror.cfd/x", "https://www.freedium-mirror.cfd/y"))
+    }
+
+    @Test
+    fun leavesReader_openOriginalToMediumLeaves() {
+        // Freedium "open original" -> medium.com must leave the reader page.
+        assertTrue(
+            leavesReaderDomain(
+                "https://freedium-mirror.cfd/https://medium.com/@u/title-abc",
+                "https://medium.com/@u/title-abc",
+            ),
+        )
+    }
+
+    @Test
+    fun leavesReader_noCurrentPageIsNotIntercepted() {
+        assertFalse(leavesReaderDomain(null, "https://medium.com/@u/t"))
+        assertFalse(leavesReaderDomain("", "https://medium.com/@u/t"))
+    }
+
+    @Test
+    fun leavesReader_userinfoTrickResolvesToRealHost() {
+        // medium.com@evil.com resolves to evil.com, which leaves a medium-parser reader page.
+        assertTrue(
+            leavesReaderDomain("https://medium-parser.vercel.app/x", "https://medium.com@evil.com/y"),
+        )
+    }
 }

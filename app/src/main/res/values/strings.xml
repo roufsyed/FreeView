@@ -93,6 +93,7 @@
     <string name="clipboard_banner">Open copied link?</string>
     <string name="action_open">Open</string>
     <string name="clipboard_dismiss">Dismiss</string>
+    <string name="open_in_browser">Open in browser</string>
 
     <!-- FAQ -->
     <string name="faq_title">FAQ</string>

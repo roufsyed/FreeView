@@ -30,6 +30,33 @@ fun matchesQuery(url: String, query: String): Boolean {
 }
 
 /**
+ * True when a link tapped on the reader page ([currentUrl]) navigates to a different site
+ * ([targetUrl]) — i.e. it leaves the reader service and should open in a browser. A missing current
+ * host (e.g. the initial load, before any page) is treated as "does not leave", and hosts that differ
+ * only by subdomain (e.g. www.) count as the same site.
+ */
+fun leavesReaderDomain(currentUrl: String?, targetUrl: String): Boolean {
+    val readerHost = hostOfUrl(currentUrl) ?: return false
+    val targetHost = hostOfUrl(targetUrl) ?: return true
+    if (readerHost == targetHost) return false
+    return !(targetHost.endsWith(".$readerHost") || readerHost.endsWith(".$targetHost"))
+}
+
+/**
+ * Lenient host extraction (scheme://HOST[:port][/path]). Java's URI is too strict for reader URLs
+ * that embed a full Medium URL in the path, so parse by hand and strip any user-info and port. The
+ * user-info strip also defuses the `medium.com@evil.com` trick — the real host is `evil.com`.
+ */
+private fun hostOfUrl(url: String?): String? {
+    if (url.isNullOrBlank()) return null
+    val afterScheme = url.substringAfter("://", "")
+    if (afterScheme.isEmpty()) return null
+    val authority = afterScheme.substringBefore('/').substringBefore('?').substringBefore('#')
+    val host = authority.substringAfterLast('@').substringBefore(':')
+    return host.ifBlank { null }?.lowercase()
+}
+
+/**
  * A canonical key for de-duplicating bookmarks: folds the scheme to https, lowercases the
  * host, and drops the query and fragment (a Medium article's identity is its path, while the
  * query is tracking noise like ?source=/?sk=). The original URL is what gets stored; this is
