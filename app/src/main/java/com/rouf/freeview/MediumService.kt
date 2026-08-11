@@ -8,7 +8,7 @@ enum class MediumService(
     private val template: String,
     private val encodeUrl: Boolean,
 ) {
-    READ_MEDIUM("readmedium", "Read-Medium", "https://readmedium.com/en/%s", false),
+    READ_MEDIUM("readmedium", "Read-Medium", "https://readmedium.com/%s", false),
     FREEDIUM("freedium", "Freedium", "https://freedium-mirror.cfd/%s", false),
     ARCHIVE_TODAY("archive_today", "Archive.today", "https://archive.today/?url=%s&run=1", true),
     ARCHIVE_IS("archive_is", "Archive.is", "https://archive.is/?url=%s&run=1", true),

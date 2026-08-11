@@ -16,7 +16,7 @@ class MediumServiceTest {
     @Test
     fun readMedium_prefixesFullUrlRaw() {
         assertEquals(
-            "https://readmedium.com/en/https://medium.com/@user/title-abc123",
+            "https://readmedium.com/https://medium.com/@user/title-abc123",
             MediumService.READ_MEDIUM.buildUrl(article),
         )
     }
