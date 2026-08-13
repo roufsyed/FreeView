@@ -11,8 +11,7 @@ enum class MediumService(
     READ_MEDIUM("readmedium", "Read-Medium", "https://readmedium.com/%s", false),
     FREEDIUM("freedium", "Freedium", "https://freedium-mirror.cfd/%s", false),
     ARCHIVE_TODAY("archive_today", "Archive.today", "https://archive.today/?url=%s&run=1", true),
-    ARCHIVE_IS("archive_is", "Archive.is", "https://archive.is/?url=%s&run=1", true),
-    PROXY_API("proxy", "Medium-Parser", "https://medium-parser.vercel.app/?url=%s", true);
+    ARCHIVE_IS("archive_is", "Archive.is", "https://archive.is/?url=%s&run=1", true);
 
     /**
      * Builds the service URL for [mediumUrl], percent-encoding it when required.
@@ -37,7 +36,7 @@ enum class MediumService(
     }
 
     companion object {
-        val DEFAULT = FREEDIUM
+        val DEFAULT = MediumService.FREEDIUM
 
         /** Returns the service with this [id], or [DEFAULT] when unknown or null. */
         fun fromId(id: String?): MediumService =

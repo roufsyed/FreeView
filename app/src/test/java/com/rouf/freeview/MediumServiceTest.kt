@@ -46,14 +46,6 @@ class MediumServiceTest {
     }
 
     @Test
-    fun proxyApi_encodesUrlInQueryParam() {
-        assertEquals(
-            "https://medium-parser.vercel.app/?url=https%3A%2F%2Fmedium.com%2F%40user%2Ftitle-abc123",
-            MediumService.PROXY_API.buildUrl(article),
-        )
-    }
-
-    @Test
     fun queryParamService_encodesAmpersandsSoTrackingParamsDoNotSplitQuery() {
         val tracked = "https://medium.com/p/abc?source=collection&sk=xyz"
         assertEquals(
@@ -64,7 +56,6 @@ class MediumServiceTest {
 
     @Test
     fun fromId_returnsMatchingService() {
-        assertEquals(MediumService.PROXY_API, MediumService.fromId("proxy"))
         assertEquals(MediumService.ARCHIVE_IS, MediumService.fromId("archive_is"))
     }
 

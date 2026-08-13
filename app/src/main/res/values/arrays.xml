@@ -7,14 +7,12 @@
         <item>Freedium</item>
         <item>Archive.today</item>
         <item>Archive.is</item>
-        <item>Proxy API</item>
     </string-array>
     <string-array name="service_values" translatable="false">
         <item>readmedium</item>
         <item>freedium</item>
         <item>archive_today</item>
         <item>archive_is</item>
-        <item>proxy</item>
     </string-array>
 
     <!-- Theme -->
